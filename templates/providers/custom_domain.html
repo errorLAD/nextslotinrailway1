@@ -335,20 +335,17 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <!-- CNAME for root domain -->
                     <tr>
                         <td><span class="badge bg-primary px-3 py-2 fs-6">CNAME</span></td>
                         <td>
-                            <code class="bg-warning text-dark p-2 rounded fs-5" id="cname-name">{{ provider.custom_domain|get_subdomain }}</code>
-                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ provider.custom_domain|get_subdomain }}', this)">
+                            <code class="bg-warning text-dark p-2 rounded fs-5" id="cname-name">@</code>
+                            <button class="copy-btn ms-2" onclick="copyToClipboard('@', this)">
                                 <i class="bi bi-clipboard"></i>
                             </button>
                             <br>
                             <small class="text-muted mt-1 d-block">
-                                {% if provider.custom_domain|get_subdomain == '@' %}
-                                    Use <strong>@</strong> for root domain
-                                {% else %}
-                                    Enter exactly: <strong>{{ provider.custom_domain|get_subdomain }}</strong>
-                                {% endif %}
+                                Use <strong>@</strong> for root domain
                             </small>
                         </td>
                         <td>
@@ -359,6 +356,28 @@
                         </td>
                         <td><span class="cloudflare-badge"><i class="bi bi-cloud-fill"></i> Proxied (Orange)</span></td>
                     </tr>
+                    <!-- CNAME for www subdomain -->
+                    <tr>
+                        <td><span class="badge bg-primary px-3 py-2 fs-6">CNAME</span></td>
+                        <td>
+                            <code class="bg-warning text-dark p-2 rounded fs-5">www</code>
+                            <button class="copy-btn ms-2" onclick="copyToClipboard('www', this)">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                            <br>
+                            <small class="text-muted mt-1 d-block">
+                                For <strong>www.{{ provider.custom_domain }}</strong>
+                            </small>
+                        </td>
+                        <td>
+                            <code class="bg-success text-white p-2 rounded fs-5">{{ default_domain }}</code>
+                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ default_domain }}', this)">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </td>
+                        <td><span class="cloudflare-badge"><i class="bi bi-cloud-fill"></i> Proxied (Orange)</span></td>
+                    </tr>
+                    <!-- TXT record for verification -->
                     <tr>
                         <td><span class="badge bg-secondary px-3 py-2 fs-6">TXT</span></td>
                         <td>
