@@ -124,9 +124,44 @@ def verify_domain_dns(domain, expected_cname=None, expected_txt=None):
         results['messages'].append(f'Error during DNS verification: {str(e)}')
         return results
 
+def generate_unique_cname_target(provider):
+    """
+    Generate a unique CNAME target for a provider.
+    Uses provider's unique_booking_url or pk to create a unique subdomain.
+    
+    Args:
+        provider (ServiceProvider): The provider to generate CNAME for
+        
+    Returns:
+        str: Unique CNAME target (e.g., 'p-ramesh-salon.yourdomain.com')
+    """
+    # Use provider's unique_booking_url for human-readable subdomain
+    slug = provider.unique_booking_url or f"provider-{provider.pk}"
+    # Prefix with 'p-' to indicate it's a provider subdomain
+    return f"p-{slug}.{settings.DEFAULT_DOMAIN}"
+
+
+def generate_unique_txt_record_name(provider):
+    """
+    Generate a unique TXT record name for domain verification.
+    Each provider gets their own verification TXT record.
+    
+    Args:
+        provider (ServiceProvider): The provider to generate TXT record name for
+        
+    Returns:
+        str: Unique TXT record name (e.g., '_bv-ramesh-salon')
+    """
+    # Use provider's unique_booking_url or pk
+    slug = provider.unique_booking_url or f"provider-{provider.pk}"
+    # Prefix with '_bv-' for booking verification
+    return f"_bv-{slug}"
+
+
 def setup_custom_domain(provider, domain, domain_type):
     """
     Set up a custom domain for a service provider.
+    Each provider gets unique CNAME target and TXT record.
     
     Args:
         provider (ServiceProvider): The service provider to set up the domain for
@@ -144,14 +179,22 @@ def setup_custom_domain(provider, domain, domain_type):
     if ServiceProvider.objects.filter(custom_domain=domain).exclude(pk=provider.pk).exists():
         return False, 'This domain is already in use by another account.', ''
     
-    # Generate verification code
+    # Generate unique verification code for this provider
     verification_code = f'booking-verify-{generate_verification_code(12)}'
+    
+    # Generate unique CNAME target for this provider
+    cname_target = generate_unique_cname_target(provider)
+    
+    # Generate unique TXT record name for this provider
+    txt_record_name = generate_unique_txt_record_name(provider)
     
     # Update provider with domain info
     provider.custom_domain = domain
     provider.custom_domain_type = domain_type
     provider.domain_verified = False
     provider.domain_verification_code = verification_code
+    provider.cname_target = cname_target
+    provider.txt_record_name = txt_record_name
     provider.domain_added_at = timezone.now()
     provider.save()
     
@@ -160,6 +203,7 @@ def setup_custom_domain(provider, domain, domain_type):
 def verify_domain_ownership(provider):
     """
     Verify domain ownership by checking DNS records.
+    Uses provider-specific CNAME target and TXT record.
     
     Args:
         provider (ServiceProvider): The service provider with domain to verify
@@ -170,18 +214,25 @@ def verify_domain_ownership(provider):
     if not provider.custom_domain or not provider.domain_verification_code:
         return False, 'No domain or verification code found.'
     
+    # Get provider's unique CNAME target (or generate if not set)
+    cname_target = provider.cname_target
+    if not cname_target:
+        cname_target = generate_unique_cname_target(provider)
+        provider.cname_target = cname_target
+        provider.save(update_fields=['cname_target'])
+    
     # For subdomains, we only need to verify CNAME
     if provider.custom_domain_type == 'subdomain':
         result = verify_domain_dns(
             domain=provider.custom_domain,
-            expected_cname=settings.DEFAULT_DOMAIN,
+            expected_cname=cname_target,
             expected_txt=provider.domain_verification_code
         )
     else:
         # For full domains, we need both CNAME and TXT verification
         result = verify_domain_dns(
             domain=provider.custom_domain,
-            expected_cname=settings.DEFAULT_DOMAIN,
+            expected_cname=cname_target,
             expected_txt=provider.domain_verification_code
         )
     

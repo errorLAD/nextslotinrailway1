@@ -178,6 +178,21 @@ class ServiceProvider(models.Model):
         default=False,
         help_text='Whether SSL is enabled for the custom domain'
     )
+    # Unique CNAME target for this provider (e.g., provider-123.yourdomain.com)
+    cname_target = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        unique=True,
+        help_text='Unique CNAME target for this provider'
+    )
+    # TXT record name (unique per provider)
+    txt_record_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text='Unique TXT record name for domain verification'
+    )
     
     # Subscription & Plan Management
     current_plan = models.CharField(

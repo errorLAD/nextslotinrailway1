@@ -10,12 +10,19 @@ from django.core.exceptions import PermissionDenied
 from django.utils.translation import gettext as _
 
 from .models import ServiceProvider
-from .domain_utils import setup_custom_domain, verify_domain_ownership, generate_verification_code
+from .domain_utils import (
+    setup_custom_domain, 
+    verify_domain_ownership, 
+    generate_verification_code,
+    generate_unique_cname_target,
+    generate_unique_txt_record_name
+)
 
 @login_required
 def custom_domain_page(request):
     """
     Dedicated page for managing custom domain settings.
+    Each provider gets unique CNAME target and TXT record.
     """
     if not hasattr(request.user, 'is_provider') or not request.user.is_provider:
         raise PermissionDenied("You don't have permission to access this page.")
@@ -26,10 +33,26 @@ def custom_domain_page(request):
     if not is_pro:
         messages.info(request, 'Custom domains are only available for PRO users. Upgrade to PRO to use this feature.')
     
+    # Get or generate unique CNAME target for this provider
+    cname_target = provider.cname_target
+    if not cname_target and provider.custom_domain:
+        cname_target = generate_unique_cname_target(provider)
+        provider.cname_target = cname_target
+        provider.save(update_fields=['cname_target'])
+    
+    # Get or generate unique TXT record name for this provider
+    txt_record_name = provider.txt_record_name
+    if not txt_record_name and provider.custom_domain:
+        txt_record_name = generate_unique_txt_record_name(provider)
+        provider.txt_record_name = txt_record_name
+        provider.save(update_fields=['txt_record_name'])
+    
     context = {
         'provider': provider,
         'default_domain': settings.DEFAULT_DOMAIN,
         'is_pro': is_pro,
+        'cname_target': cname_target or generate_unique_cname_target(provider),
+        'txt_record_name': txt_record_name or generate_unique_txt_record_name(provider),
     }
     
     return render(request, 'providers/custom_domain.html', context)
@@ -51,10 +74,16 @@ def domain_settings(request):
     if not is_pro:
         messages.info(request, 'Custom domains are only available for PRO users. Upgrade to PRO to use this feature.')
     
+    # Get or generate unique CNAME target and TXT record name
+    cname_target = provider.cname_target or generate_unique_cname_target(provider)
+    txt_record_name = provider.txt_record_name or generate_unique_txt_record_name(provider)
+    
     context = {
         'provider': provider,
         'default_domain': settings.DEFAULT_DOMAIN,
         'is_pro': is_pro,
+        'cname_target': cname_target,
+        'txt_record_name': txt_record_name,
     }
     
     return render(request, 'providers/domain/settings.html', context)
@@ -146,6 +175,7 @@ def is_valid_domain(domain):
 def domain_verification(request):
     """
     Show domain verification instructions and status.
+    Each provider has unique CNAME target and TXT record.
     """
     if not hasattr(request.user, 'is_provider') or not request.user.is_provider:
         raise PermissionDenied("You don't have permission to access this page.")
@@ -156,10 +186,16 @@ def domain_verification(request):
         messages.warning(request, 'No custom domain configured.')
         return redirect('providers:domain_settings')
     
+    # Get or generate unique CNAME target and TXT record name
+    cname_target = provider.cname_target or generate_unique_cname_target(provider)
+    txt_record_name = provider.txt_record_name or generate_unique_txt_record_name(provider)
+    
     context = {
         'provider': provider,
         'default_domain': settings.DEFAULT_DOMAIN,
         'verification_code': provider.domain_verification_code,
+        'cname_target': cname_target,
+        'txt_record_name': txt_record_name,
     }
     
     return render(request, 'providers/domain/verification.html', context)

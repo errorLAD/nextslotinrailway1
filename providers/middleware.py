@@ -48,6 +48,7 @@ class CustomDomainMiddleware:
     
     This middleware checks if the request is coming from a custom domain or subdomain
     and sets the appropriate provider in the request object.
+    Each provider has a unique CNAME target (e.g., p-salon-name.yourdomain.com).
     """
     
     def __init__(self, get_response):
@@ -86,6 +87,28 @@ class CustomDomainMiddleware:
                 # Check if this is a subdomain request (e.g., ramesh-salon.yourdomain.com)
                 if f'.{settings.DEFAULT_DOMAIN}' in host:
                     subdomain = host.replace(f'.{settings.DEFAULT_DOMAIN}', '')
+                    
+                    # First check if this is a provider's unique CNAME target (p-xxx.domain.com)
+                    if subdomain.startswith('p-'):
+                        try:
+                            provider = ServiceProvider.objects.get(
+                                cname_target=host,
+                                is_active=True
+                            )
+                            request.custom_domain_provider = provider
+                            request.is_custom_domain = True
+                            request.is_cname_target = True  # Flag to indicate direct CNAME access
+                            
+                            # If SSL is enabled, ensure we're using HTTPS
+                            if provider.ssl_enabled and not request.is_secure():
+                                from django.shortcuts import redirect
+                                return redirect(f'https://{host}{request.get_full_path()}')
+                                
+                            return self.get_response(request)
+                        except ServiceProvider.DoesNotExist:
+                            pass
+                    
+                    # Check for standard subdomain custom domain
                     try:
                         provider = ServiceProvider.objects.get(
                             custom_domain=f"{subdomain}.{settings.DEFAULT_DOMAIN}",
