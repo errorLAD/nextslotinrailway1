@@ -425,7 +425,7 @@
                     {% endfor %}
                     {% endif %}
                     
-                    {% if cloudflare_status and cloudflare_status.ownership_verification %}
+                    {% if cloudflare_status and cloudflare_status.ownership_verification and cloudflare_status.ownership_verification.name %}
                     <!-- Cloudflare Ownership Verification -->
                     <tr class="table-warning">
                         <td><span class="badge bg-warning text-dark px-3 py-2 fs-6">TXT</span></td>
@@ -436,7 +436,7 @@
                             </button>
                             <br>
                             <small class="text-warning mt-1 d-block">
-                                <i class="bi bi-patch-check-fill"></i> Hostname Ownership Verification
+                                <i class="bi bi-patch-check-fill"></i> Hostname Ownership
                             </small>
                         </td>
                         <td>
@@ -448,6 +448,16 @@
                         <td><span class="text-muted"><i class="bi bi-cloud-slash"></i> DNS Only (Grey)</span></td>
                     </tr>
                     {% endif %}
+                </tbody>
+            </table>
+            
+            <!-- Cloudflare for SaaS Note -->
+            <div class="alert alert-info mt-3">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <strong>Important:</strong> After adding these records, check <strong>SSL/TLS → Custom Hostnames</strong> in Cloudflare (nextslot.in zone) for any additional TXT records required for SSL validation. 
+                Add those TXT records to your domain's DNS as well.
+            </div>
+        </div>
                 </tbody>
             </table>
         </div>
