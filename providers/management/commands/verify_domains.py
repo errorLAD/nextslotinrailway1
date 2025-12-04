@@ -41,28 +41,24 @@ class Command(BaseCommand):
                 self.stderr.write(self.style.ERROR(f'Error verifying {provider.custom_domain}: {str(e)}'))
 
     def verify_domain(self, provider):
-        """Verify a single domain's DNS records using the main platform domain as CNAME target."""
+        """Verify a single domain's DNS records. Requires BOTH CNAME and TXT verification."""
         domain = provider.custom_domain
         self.stdout.write(f'Verifying {domain}...')
         
         # All CNAMEs should point to the main platform domain
         cname_target = settings.DEFAULT_DOMAIN
+        
+        # Get provider's unique TXT record name
+        txt_record_name = provider.txt_record_name
 
         try:
-            if provider.custom_domain_type == 'subdomain':
-                # For subdomains, check CNAME record
-                result = verify_domain_dns(
-                    domain=domain,
-                    expected_cname=cname_target,
-                    expected_txt=provider.domain_verification_code
-                )
-            else:
-                # For custom domains, check both CNAME and TXT records
-                result = verify_domain_dns(
-                    domain=domain,
-                    expected_cname=cname_target,
-                    expected_txt=provider.domain_verification_code
-                )
+            # Verify DNS records - both CNAME and TXT are required
+            result = verify_domain_dns(
+                domain=domain,
+                expected_cname=cname_target,
+                expected_txt=provider.domain_verification_code,
+                txt_record_name=txt_record_name
+            )
 
             if result['success']:
                 # Domain verified successfully
