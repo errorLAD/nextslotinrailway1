@@ -1,5 +1,9 @@
 """
 Views for managing custom domains for service providers.
+
+This module uses Cloudflare for SaaS to handle custom domain provisioning.
+Each provider can add their own domain, and Cloudflare automatically
+handles SSL and routing.
 """
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -17,12 +21,19 @@ from .domain_utils import (
     generate_unique_cname_target,
     generate_unique_txt_record_name
 )
+from .cloudflare_saas import (
+    create_custom_hostname,
+    get_custom_hostname,
+    delete_custom_hostname,
+    verify_custom_hostname,
+    get_cname_target
+)
 
 @login_required
 def custom_domain_page(request):
     """
     Dedicated page for managing custom domain settings.
-    Each provider gets unique CNAME target and TXT record.
+    Uses Cloudflare for SaaS for automatic SSL provisioning.
     """
     if not hasattr(request.user, 'is_provider') or not request.user.is_provider:
         raise PermissionDenied("You don't have permission to access this page.")
@@ -33,29 +44,28 @@ def custom_domain_page(request):
     if not is_pro:
         messages.info(request, 'Custom domains are only available for PRO users. Upgrade to PRO to use this feature.')
     
-    # Get or generate unique CNAME target for this provider
-    cname_target = provider.cname_target
-    if not cname_target and provider.custom_domain:
-        cname_target = generate_unique_cname_target(provider)
-        provider.cname_target = cname_target
-        provider.save(update_fields=['cname_target'])
+    # Get the CNAME target for Cloudflare for SaaS
+    cname_target = get_cname_target()
     
-    # Get or generate unique TXT record name for this provider
+    # For TXT record, we still use unique names for additional verification
     txt_record_name = provider.txt_record_name
     if not txt_record_name and provider.custom_domain:
         txt_record_name = generate_unique_txt_record_name(provider)
         provider.txt_record_name = txt_record_name
         provider.save(update_fields=['txt_record_name'])
     
-    # Get the Railway domain for CNAME target
-    railway_domain = getattr(settings, 'RAILWAY_DOMAIN', 'web-production-200fb.up.railway.app')
+    # Check Cloudflare status if domain is configured
+    cloudflare_status = None
+    if provider.custom_domain:
+        cloudflare_status = verify_custom_hostname(provider.custom_domain)
     
     context = {
         'provider': provider,
-        'default_domain': railway_domain,  # Use Railway domain for CNAME
+        'default_domain': cname_target,  # CNAME target for Cloudflare for SaaS
         'is_pro': is_pro,
-        'cname_target': cname_target or generate_unique_cname_target(provider),
+        'cname_target': cname_target,
         'txt_record_name': txt_record_name or generate_unique_txt_record_name(provider),
+        'cloudflare_status': cloudflare_status,
     }
     
     return render(request, 'providers/custom_domain.html', context)
@@ -158,7 +168,32 @@ def add_custom_domain(request):
             provider.save(update_fields=['domain_verified', 'ssl_enabled'])
             messages.success(request, f'🎉 Your subdomain "{domain}" is now active! Visit it now.')
         else:
-            messages.success(request, f'Domain "{domain}" request submitted! We will review and add it to our server within 24-48 hours. You will receive DNS setup instructions via email.')
+            # For full custom domains, create hostname in Cloudflare for SaaS
+            cf_result = create_custom_hostname(domain, provider.pk)
+            
+            if cf_result.get('success'):
+                # Store Cloudflare hostname ID for later management
+                provider.cloudflare_hostname_id = cf_result.get('hostname_id', '')
+                provider.save(update_fields=['cloudflare_hostname_id'])
+                
+                cname_target = get_cname_target()
+                messages.success(
+                    request, 
+                    f'✅ Domain "{domain}" has been registered! '
+                    f'Now add a CNAME record pointing to: {cname_target}'
+                )
+            elif cf_result.get('manual_setup_required'):
+                # Cloudflare not configured, fall back to manual process
+                messages.info(
+                    request, 
+                    f'Domain "{domain}" added. Please configure DNS and contact support for activation.'
+                )
+            else:
+                messages.warning(
+                    request, 
+                    f'Domain "{domain}" added but automatic setup failed: {cf_result.get("error")}. '
+                    f'Please contact support.'
+                )
         return redirect('providers:custom_domain')
     else:
         messages.error(request, message)

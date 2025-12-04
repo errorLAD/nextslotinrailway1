@@ -32,6 +32,10 @@ CLOUDFLARE_API_TOKEN = config('CLOUDFLARE_API_TOKEN', default='')
 CLOUDFLARE_ZONE_ID = config('CLOUDFLARE_ZONE_ID', default='')
 CLOUDFLARE_ACCOUNT_ID = config('CLOUDFLARE_ACCOUNT_ID', default='')
 
+# Cloudflare for SaaS - CNAME target for custom domains
+# Customers point their domains to this (e.g., customers.nextslot.in)
+CLOUDFLARE_CNAME_TARGET = config('CLOUDFLARE_CNAME_TARGET', default=f'customers.{DEFAULT_DOMAIN}')
+
 # Add the default domain to ALLOWED_HOSTS if not already present
 if DEFAULT_DOMAIN not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(DEFAULT_DOMAIN)

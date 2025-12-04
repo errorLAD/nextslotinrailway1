@@ -193,6 +193,13 @@ class ServiceProvider(models.Model):
         null=True,
         help_text='Unique TXT record name for domain verification'
     )
+    # Cloudflare Custom Hostname ID (for Cloudflare for SaaS)
+    cloudflare_hostname_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text='Cloudflare Custom Hostname ID for this domain'
+    )
     
     # Subscription & Plan Management
     current_plan = models.CharField(
