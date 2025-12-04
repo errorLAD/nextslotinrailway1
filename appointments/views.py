@@ -10,21 +10,12 @@ from .models import Appointment
 import json
 
 
-def public_booking_page(request, slug=None):
+def public_booking_page(request, slug):
     """
     Public booking page for a service provider.
     Shows login/signup modal for unauthenticated users.
-    
-    If accessed via custom domain, the provider is set in request.custom_domain_provider
     """
-    # Check if this is a custom domain request
-    if hasattr(request, 'custom_domain_provider') and request.custom_domain_provider:
-        provider = request.custom_domain_provider
-    elif slug:
-        provider = get_object_or_404(ServiceProvider, unique_booking_url=slug, is_active=True)
-    else:
-        # No slug and no custom domain - redirect to providers list
-        return redirect('appointments:book_providers')
+    provider = get_object_or_404(ServiceProvider, unique_booking_url=slug, is_active=True)
     services = provider.services.filter(is_active=True)
 
     # Collect availability from all services' custom availability

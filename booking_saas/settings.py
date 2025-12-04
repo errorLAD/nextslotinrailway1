@@ -1,7 +1,7 @@
 """
 Django settings for booking_saas project.
 Multi-tenant appointment booking SaaS with freemium pricing.
-testingrailway 
+testing
 """
 
 from pathlib import Path
@@ -17,7 +17,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-produc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,top-anita-abhishekmishra-b85afe4a.koyeb.app').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1 , web-production-200fb.up.railway.app').split(',')
 
 # Domain configuration
 DEFAULT_DOMAIN = config('DEFAULT_DOMAIN', default='yourdomain.com')
@@ -288,10 +288,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # Allow all hosts in Railway (Railway handles this via proxy)
-# This also allows custom domains for service providers
 import os
 if os.environ.get('RAILWAY_ENVIRONMENT'):
     ALLOWED_HOSTS = ['*']
     DEBUG = False
-    # Add custom domain origins dynamically
-    CSRF_TRUSTED_ORIGINS.append('https://*')  # Allow all HTTPS origins for custom domains
