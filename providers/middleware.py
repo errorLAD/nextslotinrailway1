@@ -49,6 +49,10 @@ class CustomDomainMiddleware:
     This middleware checks if the request is coming from a custom domain or subdomain
     and sets the appropriate provider in the request object.
     All providers use the same CNAME target (the main platform domain).
+    
+    DNS Configuration for Custom Domains:
+    - CNAME: customer-domain.com -> nextslot.in (proxied via Cloudflare)
+    - TXT: _bv-{slug}.customer-domain.com -> booking-verify-{code}
     """
     
     def __init__(self, get_response):
@@ -58,53 +62,66 @@ class CustomDomainMiddleware:
         # Skip for static/media files and admin
         if request.path.startswith(('/static/', '/media/', '/admin/')):
             return self.get_response(request)
-            
-        host = request.get_host().split(':')[0]
         
-        # Skip if it's the default domain
-        if host != settings.DEFAULT_DOMAIN and not any(host.endswith(f'.{domain}') for domain in settings.ALLOWED_HOSTS):
+        # Initialize default values
+        request.custom_domain_provider = None
+        request.is_custom_domain = False
+            
+        host = request.get_host().split(':')[0].lower()
+        
+        # Skip if it's the default domain or localhost
+        default_domain = getattr(settings, 'DEFAULT_DOMAIN', 'nextslot.in')
+        if host in [default_domain, 'localhost', '127.0.0.1'] or host.endswith('.railway.app'):
+            return self.get_response(request)
+        
+        # Check if this is a subdomain of the default domain
+        if host.endswith(f'.{default_domain}'):
+            subdomain = host.replace(f'.{default_domain}', '')
             try:
-                # Try to find a provider with this custom domain
+                provider = ServiceProvider.objects.get(
+                    custom_domain=host,
+                    custom_domain_type='subdomain',
+                    domain_verified=True,
+                    is_active=True
+                )
+                request.custom_domain_provider = provider
+                request.is_custom_domain = True
+            except ServiceProvider.DoesNotExist:
+                pass
+        else:
+            # This is an external custom domain (e.g., okmentor.in)
+            try:
                 provider = ServiceProvider.objects.get(
                     custom_domain=host,
                     domain_verified=True,
                     is_active=True
                 )
-                
-                # Set provider in request for views to use
                 request.custom_domain_provider = provider
-                
-                # Set a flag to indicate this is a custom domain request
                 request.is_custom_domain = True
                 
-                # If SSL is enabled, ensure we're using HTTPS
-                if provider.ssl_enabled and not request.is_secure():
-                    from django.urls import reverse
-                    from django.shortcuts import redirect
-                    return redirect(f'https://{host}{request.get_full_path()}')
-                    
             except ServiceProvider.DoesNotExist:
-                # Check if this is a subdomain request (e.g., ramesh-salon.yourdomain.com)
-                if f'.{settings.DEFAULT_DOMAIN}' in host:
-                    subdomain = host.replace(f'.{settings.DEFAULT_DOMAIN}', '')
-                    
-                    # Check for standard subdomain custom domain
+                # Also check with www prefix
+                if host.startswith('www.'):
                     try:
                         provider = ServiceProvider.objects.get(
-                            custom_domain=f"{subdomain}.{settings.DEFAULT_DOMAIN}",
-                            custom_domain_type='subdomain',
+                            custom_domain=host[4:],  # Remove www.
                             domain_verified=True,
                             is_active=True
                         )
                         request.custom_domain_provider = provider
                         request.is_custom_domain = True
-                        
-                        # If SSL is enabled, ensure we're using HTTPS
-                        if provider.ssl_enabled and not request.is_secure():
-                            from django.urls import reverse
-                            from django.shortcuts import redirect
-                            return redirect(f'https://{host}{request.get_full_path()}')
-                            
+                    except ServiceProvider.DoesNotExist:
+                        pass
+                else:
+                    # Try with www prefix
+                    try:
+                        provider = ServiceProvider.objects.get(
+                            custom_domain=f'www.{host}',
+                            domain_verified=True,
+                            is_active=True
+                        )
+                        request.custom_domain_provider = provider
+                        request.is_custom_domain = True
                     except ServiceProvider.DoesNotExist:
                         pass
         

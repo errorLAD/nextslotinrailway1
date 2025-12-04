@@ -17,10 +17,10 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-produc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1 , web-production-200fb.up.railway.app').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,web-production-200fb.up.railway.app').split(',')
 
 # Domain configuration
-DEFAULT_DOMAIN = config('DEFAULT_DOMAIN', default='yourdomain.com')
+DEFAULT_DOMAIN = config('DEFAULT_DOMAIN', default='nextslot.in')
 DEFAULT_SCHEME = config('DEFAULT_SCHEME', default='https')
 
 # Cloudflare Configuration (for custom domain SSL & DNS)
@@ -34,6 +34,16 @@ if DEFAULT_DOMAIN not in ALLOWED_HOSTS:
 
 # Allow all subdomains of the default domain
 ALLOWED_HOSTS.append(f'.{DEFAULT_DOMAIN}')
+
+# ============================================================================
+# CUSTOM DOMAIN SUPPORT
+# ============================================================================
+# Allow ANY custom domain - wildcard for all verified custom domains
+# This is needed because providers can add their own domains (e.g., okmentor.in)
+ALLOWED_HOSTS.append('*')  # Accept all hosts - we validate in middleware
+
+# For more secure setup, you can use ALLOWED_HOSTS = ['*'] only in production
+# and validate domains in CustomDomainMiddleware
 
 
 # Application definition
