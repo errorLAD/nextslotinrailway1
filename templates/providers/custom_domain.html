@@ -314,16 +314,14 @@
         <!-- Important Note -->
         <div class="alert alert-info mb-3">
             <i class="bi bi-info-circle-fill me-2"></i>
-            <strong>Important:</strong> Each service provider gets unique DNS records. 
-            In Cloudflare, the "Name" field should be just the subdomain part (e.g., <code>book</code>), 
+            <strong>Important:</strong> In Cloudflare, the "Name" field should be just the subdomain part (e.g., <code>book</code>), 
             not the full domain. Cloudflare automatically appends your domain.
         </div>
         
-        <!-- Unique Records Notice -->
+        <!-- Unique TXT Record Notice -->
         <div class="alert alert-success mb-3">
             <i class="bi bi-shield-check me-2"></i>
-            <strong>Your Unique DNS Records:</strong> These CNAME and TXT records are unique to your account. 
-            No other service provider will have the same records.
+            <strong>Your Unique Verification:</strong> The TXT record name and value are unique to your account for verification.
         </div>
         
         <div class="table-responsive dns-table">
@@ -354,14 +352,10 @@
                             </small>
                         </td>
                         <td>
-                            <code class="bg-success text-white p-2 rounded fs-5" id="cname-target">{{ cname_target }}</code>
-                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ cname_target }}', this)">
+                            <code class="bg-success text-white p-2 rounded fs-5" id="cname-target">{{ default_domain }}</code>
+                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ default_domain }}', this)">
                                 <i class="bi bi-clipboard"></i>
                             </button>
-                            <br>
-                            <small class="text-info mt-1 d-block">
-                                <i class="bi bi-star-fill"></i> Your unique CNAME target
-                            </small>
                         </td>
                         <td><span class="cloudflare-badge"><i class="bi bi-cloud-fill"></i> Proxied (Orange)</span></td>
                     </tr>
@@ -405,7 +399,7 @@
                             <li>Click <strong>"Add record"</strong></li>
                             <li>Type: Select <code>CNAME</code></li>
                             <li>Name: Enter <code class="bg-warning px-2 py-1 rounded">{{ provider.custom_domain|get_subdomain }}</code></li>
-                            <li>Target: Enter <code class="bg-success text-white px-2 py-1 rounded">{{ cname_target }}</code> <span class="badge bg-info">Your unique target</span></li>
+                            <li>Target: Enter <code class="bg-success text-white px-2 py-1 rounded">{{ default_domain }}</code></li>
                             <li>Proxy status: <strong class="text-warning">☁️ Proxied (Orange cloud ON)</strong></li>
                             <li>Click <strong>Save</strong></li>
                         </ul>

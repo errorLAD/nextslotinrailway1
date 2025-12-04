@@ -1,7 +1,7 @@
 ""
 Management command to verify domain ownership by checking DNS records.
 This should be run as a periodic task (e.g., via Celery Beat).
-Each provider has unique CNAME target and TXT record for verification.
+Each provider has unique TXT record for verification.
 """
 import logging
 from datetime import datetime, timedelta
@@ -9,7 +9,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.utils import timezone
 from providers.models import ServiceProvider
-from providers.domain_utils import verify_domain_dns, generate_unique_cname_target
+from providers.domain_utils import verify_domain_dns
 
 logger = logging.getLogger(__name__)
 
@@ -41,20 +41,16 @@ class Command(BaseCommand):
                 self.stderr.write(self.style.ERROR(f'Error verifying {provider.custom_domain}: {str(e)}'))
 
     def verify_domain(self, provider):
-        """Verify a single domain's DNS records using provider-specific CNAME target."""
+        """Verify a single domain's DNS records using the main platform domain as CNAME target."""
         domain = provider.custom_domain
         self.stdout.write(f'Verifying {domain}...')
         
-        # Get provider's unique CNAME target
-        cname_target = provider.cname_target
-        if not cname_target:
-            cname_target = generate_unique_cname_target(provider)
-            provider.cname_target = cname_target
-            provider.save(update_fields=['cname_target'])
+        # All CNAMEs should point to the main platform domain
+        cname_target = settings.DEFAULT_DOMAIN
 
         try:
             if provider.custom_domain_type == 'subdomain':
-                # For subdomains, check CNAME record with provider-specific target
+                # For subdomains, check CNAME record
                 result = verify_domain_dns(
                     domain=domain,
                     expected_cname=cname_target,

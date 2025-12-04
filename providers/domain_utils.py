@@ -126,19 +126,20 @@ def verify_domain_dns(domain, expected_cname=None, expected_txt=None):
 
 def generate_unique_cname_target(provider):
     """
-    Generate a unique CNAME target for a provider.
-    Uses provider's unique_booking_url or pk to create a unique subdomain.
+    Get the CNAME target for a provider.
+    All providers point to the same main domain (Railway app URL).
+    The unique identification is done via the custom domain itself.
     
     Args:
         provider (ServiceProvider): The provider to generate CNAME for
         
     Returns:
-        str: Unique CNAME target (e.g., 'p-ramesh-salon.yourdomain.com')
+        str: CNAME target (the main Railway/platform domain)
     """
-    # Use provider's unique_booking_url for human-readable subdomain
-    slug = provider.unique_booking_url or f"provider-{provider.pk}"
-    # Prefix with 'p-' to indicate it's a provider subdomain
-    return f"p-{slug}.{settings.DEFAULT_DOMAIN}"
+    # All providers use the same CNAME target - the main platform domain
+    # This is because Railway/the hosting platform only has one IP/domain
+    # The routing is done by the middleware based on the Host header
+    return settings.DEFAULT_DOMAIN
 
 
 def generate_unique_txt_record_name(provider):
@@ -203,7 +204,7 @@ def setup_custom_domain(provider, domain, domain_type):
 def verify_domain_ownership(provider):
     """
     Verify domain ownership by checking DNS records.
-    Uses provider-specific CNAME target and TXT record.
+    Uses the main platform domain as CNAME target and provider-specific TXT record.
     
     Args:
         provider (ServiceProvider): The service provider with domain to verify
@@ -214,12 +215,8 @@ def verify_domain_ownership(provider):
     if not provider.custom_domain or not provider.domain_verification_code:
         return False, 'No domain or verification code found.'
     
-    # Get provider's unique CNAME target (or generate if not set)
-    cname_target = provider.cname_target
-    if not cname_target:
-        cname_target = generate_unique_cname_target(provider)
-        provider.cname_target = cname_target
-        provider.save(update_fields=['cname_target'])
+    # CNAME should point to the main platform domain
+    cname_target = settings.DEFAULT_DOMAIN
     
     # For subdomains, we only need to verify CNAME
     if provider.custom_domain_type == 'subdomain':
