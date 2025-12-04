@@ -145,12 +145,22 @@ def get_custom_hostname(custom_domain: str) -> dict:
         if data.get("success") and data.get("result"):
             result = data["result"][0] if data["result"] else None
             if result:
+                # Extract SSL validation records
+                ssl_info = result.get("ssl", {})
+                validation_records = ssl_info.get("validation_records", [])
+                
+                # Extract ownership verification
+                ownership_verification = result.get("ownership_verification", {})
+                
                 return {
                     "success": True,
                     "hostname_id": result.get("id"),
                     "status": result.get("status"),
-                    "ssl_status": result.get("ssl", {}).get("status"),
-                    "is_active": result.get("status") == "active"
+                    "ssl_status": ssl_info.get("status"),
+                    "is_active": result.get("status") == "active",
+                    "ssl_validation_records": validation_records,
+                    "ownership_verification": ownership_verification,
+                    "ownership_verification_http": result.get("ownership_verification_http", {}),
                 }
         
         return {"success": False, "error": "Hostname not found"}

@@ -379,6 +379,56 @@
                         </td>
                         <td><span class="text-muted"><i class="bi bi-cloud-slash"></i> DNS Only (Grey)</span></td>
                     </tr>
+                    
+                    {% if cloudflare_status and cloudflare_status.ssl_validation_records %}
+                    <!-- Cloudflare SSL Validation Records -->
+                    {% for record in cloudflare_status.ssl_validation_records %}
+                    <tr class="table-info">
+                        <td><span class="badge bg-info px-3 py-2 fs-6">TXT</span></td>
+                        <td>
+                            <code class="bg-warning text-dark p-2 rounded">{{ record.txt_name }}</code>
+                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ record.txt_name }}', this)">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                            <br>
+                            <small class="text-danger mt-1 d-block">
+                                <i class="bi bi-shield-lock-fill"></i> SSL Certificate Validation
+                            </small>
+                        </td>
+                        <td>
+                            <code class="bg-light p-2 rounded text-break" style="max-width: 250px; display: inline-block; font-size: 0.75rem;">{{ record.txt_value }}</code>
+                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ record.txt_value }}', this)">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </td>
+                        <td><span class="text-muted"><i class="bi bi-cloud-slash"></i> DNS Only (Grey)</span></td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+                    
+                    {% if cloudflare_status and cloudflare_status.ownership_verification %}
+                    <!-- Cloudflare Ownership Verification -->
+                    <tr class="table-warning">
+                        <td><span class="badge bg-warning text-dark px-3 py-2 fs-6">TXT</span></td>
+                        <td>
+                            <code class="bg-warning text-dark p-2 rounded">{{ cloudflare_status.ownership_verification.name }}</code>
+                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ cloudflare_status.ownership_verification.name }}', this)">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                            <br>
+                            <small class="text-warning mt-1 d-block">
+                                <i class="bi bi-patch-check-fill"></i> Hostname Ownership Verification
+                            </small>
+                        </td>
+                        <td>
+                            <code class="bg-light p-2 rounded text-break" style="max-width: 250px; display: inline-block; font-size: 0.75rem;">{{ cloudflare_status.ownership_verification.value }}</code>
+                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ cloudflare_status.ownership_verification.value }}', this)">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </td>
+                        <td><span class="text-muted"><i class="bi bi-cloud-slash"></i> DNS Only (Grey)</span></td>
+                    </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
