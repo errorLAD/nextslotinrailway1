@@ -214,8 +214,8 @@ def setup_custom_domain(provider, domain, domain_type):
 
 def verify_domain_ownership(provider):
     """
-    Verify domain ownership by checking DNS records.
-    REQUIRES BOTH CNAME/A record AND TXT verification for security.
+    Verify domain ownership using Cloudflare for SaaS.
+    Checks if the custom hostname is active in Cloudflare.
     
     Args:
         provider (ServiceProvider): The service provider with domain to verify
@@ -223,28 +223,56 @@ def verify_domain_ownership(provider):
     Returns:
         tuple: (success: bool, message: str)
     """
-    if not provider.custom_domain or not provider.domain_verification_code:
-        return False, 'No domain or verification code found.'
+    if not provider.custom_domain:
+        return False, 'No domain configured.'
     
-    # CNAME should point to the main platform domain
-    cname_target = settings.DEFAULT_DOMAIN
+    # Import here to avoid circular imports
+    from .cloudflare_saas import verify_custom_hostname, get_custom_hostname
     
-    # Get provider's unique TXT record name
-    txt_record_name = provider.txt_record_name
+    # Check Cloudflare Custom Hostname status
+    cf_status = verify_custom_hostname(provider.custom_domain)
     
-    # Verify DNS records - both CNAME and TXT are required
-    result = verify_domain_dns(
-        domain=provider.custom_domain,
-        expected_cname=cname_target,
-        expected_txt=provider.domain_verification_code,
-        txt_record_name=txt_record_name
-    )
+    if not cf_status.get('success'):
+        # Cloudflare API error or hostname not found
+        error = cf_status.get('error', 'Unknown error')
+        return False, f'Could not verify domain with Cloudflare: {error}'
     
-    if result['success']:
-        # Update provider with verification status
+    # Check if hostname is fully active
+    if cf_status.get('fully_active'):
+        # Domain is verified and SSL is active
         provider.domain_verified = True
-        provider.ssl_enabled = True  # Auto-enable SSL for verified domains
-        provider.save()
-        return True, 'Domain verified successfully! Both CNAME and TXT records confirmed. SSL will be enabled shortly.'
+        provider.ssl_enabled = True
+        provider.save(update_fields=['domain_verified', 'ssl_enabled'])
+        return True, 'Domain verified successfully! SSL is active.'
+    
+    # Check individual status
+    hostname_status = cf_status.get('status', 'unknown')
+    ssl_status = cf_status.get('ssl_status', 'unknown')
+    
+    # Build helpful message based on status
+    messages = []
+    
+    if hostname_status == 'pending':
+        messages.append('Waiting for hostname ownership verification.')
+        # Check if ownership TXT record is needed
+        ownership = cf_status.get('ownership_verification', {})
+        if ownership:
+            messages.append(f'Add TXT record: _cf-custom-hostname → {ownership.get("value", "")}')
+    elif hostname_status == 'active':
+        messages.append('Hostname ownership verified.')
     else:
-        return False, 'Domain verification failed. ' + ' '.join(result['messages'])
+        messages.append(f'Hostname status: {hostname_status}')
+    
+    if ssl_status == 'pending_validation':
+        messages.append('Waiting for SSL certificate validation.')
+        # Check if SSL TXT record is needed
+        ssl_records = cf_status.get('ssl_validation_records', [])
+        if ssl_records:
+            for rec in ssl_records:
+                messages.append(f'Add TXT record: _acme-challenge → {rec.get("txt_value", "")}')
+    elif ssl_status == 'active':
+        messages.append('SSL certificate is active.')
+    else:
+        messages.append(f'SSL status: {ssl_status}')
+    
+    return False, ' '.join(messages)
