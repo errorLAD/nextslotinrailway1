@@ -138,6 +138,9 @@ def add_custom_domain(request):
         
         # Construct full domain
         domain = f"{domain}.{settings.DEFAULT_DOMAIN}"
+        
+        # Auto-verify subdomains since they use our wildcard SSL
+        # Subdomains don't need DNS verification - they work instantly
     else:
         # For custom domains, validate the domain format
         if not is_valid_domain(domain):
@@ -148,7 +151,14 @@ def add_custom_domain(request):
     success, message, verification_code = setup_custom_domain(provider, domain, domain_type)
     
     if success:
-        messages.success(request, f'Domain "{domain}" added! Please configure DNS records in Cloudflare to complete setup.')
+        # For subdomains, auto-verify immediately
+        if domain_type == 'subdomain':
+            provider.domain_verified = True
+            provider.ssl_enabled = True
+            provider.save(update_fields=['domain_verified', 'ssl_enabled'])
+            messages.success(request, f'🎉 Your subdomain "{domain}" is now active! Visit it now.')
+        else:
+            messages.success(request, f'Domain "{domain}" request submitted! We will review and add it to our server within 24-48 hours. You will receive DNS setup instructions via email.')
         return redirect('providers:custom_domain')
     else:
         messages.error(request, message)

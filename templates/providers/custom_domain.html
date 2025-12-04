@@ -457,28 +457,77 @@
     {% else %}
     <!-- No Domain - Setup Form -->
     <div class="domain-input-section">
-        <h4 class="mb-2">Enter Your Domain</h4>
-        <p class="text-muted mb-4">Enter the domain or subdomain you want to connect to your booking page.</p>
-        
-        <form method="post" action="{% url 'providers:add_custom_domain' %}">
-            {% csrf_token %}
-            <input type="hidden" name="domain_type" value="domain">
-            <div class="domain-input-group mb-3">
-                <i class="bi bi-globe2 text-primary fs-4 ms-3"></i>
-                <input type="text" 
-                       name="domain" 
-                       placeholder="book.yourdomain.com" 
-                       pattern="[a-zA-Z0-9.-]+"
-                       required>
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-plus-lg me-2"></i> Add Domain
-                </button>
+        <!-- Option 1: Subdomain (Instant - Recommended) -->
+        <div class="card border-success mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-lightning-charge-fill me-2"></i>Option 1: Instant Subdomain (Recommended)</h5>
             </div>
-            <p class="text-muted small">
-                <i class="bi bi-info-circle me-1"></i> 
-                Examples: <code>book.yourbusiness.com</code>, <code>appointments.yourdomain.com</code>, <code>yourbrand.com</code>
-            </p>
-        </form>
+            <div class="card-body">
+                <p class="text-muted mb-3">Get your branded booking page instantly - no DNS setup required!</p>
+                
+                <form method="post" action="{% url 'providers:add_custom_domain' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="domain_type" value="subdomain">
+                    <div class="input-group mb-3">
+                        <input type="text" 
+                               class="form-control form-control-lg"
+                               name="domain" 
+                               placeholder="your-business-name" 
+                               pattern="[a-zA-Z0-9-]+"
+                               required
+                               style="max-width: 300px;">
+                        <span class="input-group-text bg-light">.nextslot.in</span>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-lg me-2"></i> Activate Now
+                        </button>
+                    </div>
+                    <p class="text-success small mb-0">
+                        <i class="bi bi-check-circle-fill me-1"></i> 
+                        <strong>Instant activation!</strong> No DNS configuration needed. SSL included.
+                    </p>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Option 2: Full Custom Domain -->
+        <div class="card border-warning mb-4">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="bi bi-globe2 me-2"></i>Option 2: Your Own Domain</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Use your own domain like <code>okmentor.in</code> or <code>book.yourbusiness.com</code></p>
+                
+                <div class="alert alert-info mb-3">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <strong>Note:</strong> Custom domains require:
+                    <ul class="mb-0 mt-2">
+                        <li>DNS configuration in Cloudflare</li>
+                        <li>Admin approval (we'll add it to our server)</li>
+                        <li>24-48 hours for activation</li>
+                    </ul>
+                </div>
+                
+                <form method="post" action="{% url 'providers:add_custom_domain' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="domain_type" value="domain">
+                    <div class="domain-input-group mb-3">
+                        <i class="bi bi-globe2 text-primary fs-4 ms-3"></i>
+                        <input type="text" 
+                               name="domain" 
+                               placeholder="book.yourdomain.com" 
+                               pattern="[a-zA-Z0-9.-]+"
+                               required>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-send me-2"></i> Request Domain
+                        </button>
+                    </div>
+                    <p class="text-muted small">
+                        <i class="bi bi-envelope-fill me-1"></i> 
+                        After submitting, we'll contact you with DNS setup instructions and add your domain to our server.
+                    </p>
+                </form>
+            </div>
+        </div>
     </div>
     
     <!-- How It Works -->
