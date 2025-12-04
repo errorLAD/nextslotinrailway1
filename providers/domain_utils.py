@@ -138,19 +138,19 @@ def verify_domain_dns(domain, expected_cname=None, expected_txt=None, txt_record
 def generate_unique_cname_target(provider):
     """
     Get the CNAME target for a provider.
-    All providers point to the same main domain (Railway app URL).
+    All providers point to the same Railway app domain.
     The unique identification is done via the custom domain itself.
     
     Args:
         provider (ServiceProvider): The provider to generate CNAME for
         
     Returns:
-        str: CNAME target (the main Railway/platform domain)
+        str: CNAME target (the Railway app domain)
     """
-    # All providers use the same CNAME target - the main platform domain
-    # This is because Railway/the hosting platform only has one IP/domain
+    # All providers use the same CNAME target - the Railway app domain
+    # This is because Railway only has one domain for the app
     # The routing is done by the middleware based on the Host header
-    return settings.DEFAULT_DOMAIN
+    return getattr(settings, 'RAILWAY_DOMAIN', 'web-production-200fb.up.railway.app')
 
 
 def generate_unique_txt_record_name(provider):

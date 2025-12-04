@@ -47,9 +47,12 @@ def custom_domain_page(request):
         provider.txt_record_name = txt_record_name
         provider.save(update_fields=['txt_record_name'])
     
+    # Get the Railway domain for CNAME target
+    railway_domain = getattr(settings, 'RAILWAY_DOMAIN', 'web-production-200fb.up.railway.app')
+    
     context = {
         'provider': provider,
-        'default_domain': settings.DEFAULT_DOMAIN,
+        'default_domain': railway_domain,  # Use Railway domain for CNAME
         'is_pro': is_pro,
         'cname_target': cname_target or generate_unique_cname_target(provider),
         'txt_record_name': txt_record_name or generate_unique_txt_record_name(provider),
@@ -78,9 +81,12 @@ def domain_settings(request):
     cname_target = provider.cname_target or generate_unique_cname_target(provider)
     txt_record_name = provider.txt_record_name or generate_unique_txt_record_name(provider)
     
+    # Get the Railway domain for CNAME target
+    railway_domain = getattr(settings, 'RAILWAY_DOMAIN', 'web-production-200fb.up.railway.app')
+    
     context = {
         'provider': provider,
-        'default_domain': settings.DEFAULT_DOMAIN,
+        'default_domain': railway_domain,  # Use Railway domain for CNAME
         'is_pro': is_pro,
         'cname_target': cname_target,
         'txt_record_name': txt_record_name,

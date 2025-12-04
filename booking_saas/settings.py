@@ -23,6 +23,10 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,web-product
 DEFAULT_DOMAIN = config('DEFAULT_DOMAIN', default='nextslot.in')
 DEFAULT_SCHEME = config('DEFAULT_SCHEME', default='https')
 
+# Railway app domain - this is what custom domains should CNAME to
+# This is your Railway app's .railway.app domain
+RAILWAY_DOMAIN = config('RAILWAY_DOMAIN', default='web-production-200fb.up.railway.app')
+
 # Cloudflare Configuration (for custom domain SSL & DNS)
 CLOUDFLARE_API_TOKEN = config('CLOUDFLARE_API_TOKEN', default='')
 CLOUDFLARE_ZONE_ID = config('CLOUDFLARE_ZONE_ID', default='')
