@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.contrib import messages
 from django.conf import settings
 from django.http import Http404
+from django.shortcuts import redirect
 from .models import ServiceProvider
 
 
@@ -47,12 +48,9 @@ class CustomDomainMiddleware:
     Middleware to handle custom domain routing for service providers.
     
     This middleware checks if the request is coming from a custom domain or subdomain
-    and sets the appropriate provider in the request object.
-    All providers use the same CNAME target (the main platform domain).
+    and redirects to the provider's booking page.
     
-    DNS Configuration for Custom Domains:
-    - CNAME: customer-domain.com -> nextslot.in (proxied via Cloudflare)
-    - TXT: _bv-{slug}.customer-domain.com -> booking-verify-{code}
+    Works with Cloudflare for SaaS - domains don't need to be pre-verified.
     """
     
     def __init__(self, get_response):
@@ -67,63 +65,85 @@ class CustomDomainMiddleware:
         request.custom_domain_provider = None
         request.is_custom_domain = False
             
-        host = request.get_host().split(':')[0].lower()
+        host = request.get_host().split(':')[0].lower().strip()
+        
+        # Remove www prefix for checking
+        check_host = host[4:] if host.startswith('www.') else host
         
         # Skip if it's the default domain or localhost
         default_domain = getattr(settings, 'DEFAULT_DOMAIN', 'nextslot.in')
-        if host in [default_domain, 'localhost', '127.0.0.1'] or host.endswith('.railway.app'):
+        skip_hosts = [default_domain, f'www.{default_domain}', 'localhost', '127.0.0.1', 'customers.' + default_domain]
+        
+        if check_host in skip_hosts or host.endswith('.railway.app') or host.endswith('.up.railway.app'):
             return self.get_response(request)
         
-        # Check if this is a subdomain of the default domain
-        if host.endswith(f'.{default_domain}'):
-            subdomain = host.replace(f'.{default_domain}', '')
-            try:
-                provider = ServiceProvider.objects.get(
-                    custom_domain=host,
-                    custom_domain_type='subdomain',
-                    domain_verified=True,
-                    is_active=True
-                )
-                request.custom_domain_provider = provider
-                request.is_custom_domain = True
-            except ServiceProvider.DoesNotExist:
-                pass
+        # Check if this is a subdomain of the default domain (e.g., business.nextslot.in)
+        if check_host.endswith(f'.{default_domain}'):
+            subdomain = check_host.replace(f'.{default_domain}', '')
+            if subdomain and subdomain != 'www' and subdomain != 'customers':
+                try:
+                    # For subdomains, check by subdomain match
+                    provider = ServiceProvider.objects.get(
+                        custom_domain=check_host,
+                        is_active=True
+                    )
+                    request.custom_domain_provider = provider
+                    request.is_custom_domain = True
+                    
+                    # Redirect to provider's booking page if at root
+                    if request.path == '/' or request.path == '':
+                        return redirect('appointments:public_booking', slug=provider.unique_booking_url)
+                        
+                except ServiceProvider.DoesNotExist:
+                    # Try to find by unique_booking_url matching subdomain
+                    try:
+                        provider = ServiceProvider.objects.get(
+                            unique_booking_url=subdomain,
+                            is_active=True
+                        )
+                        request.custom_domain_provider = provider
+                        request.is_custom_domain = True
+                        
+                        if request.path == '/' or request.path == '':
+                            return redirect('appointments:public_booking', slug=provider.unique_booking_url)
+                    except ServiceProvider.DoesNotExist:
+                        pass
         else:
             # This is an external custom domain (e.g., okmentor.in)
+            # Try to find provider by custom domain (check both with and without www)
+            provider = None
+            
+            # Try exact match first
             try:
                 provider = ServiceProvider.objects.get(
-                    custom_domain=host,
-                    domain_verified=True,
+                    custom_domain__iexact=check_host,
                     is_active=True
                 )
+            except ServiceProvider.DoesNotExist:
+                # Try with www prefix
+                try:
+                    provider = ServiceProvider.objects.get(
+                        custom_domain__iexact=f'www.{check_host}',
+                        is_active=True
+                    )
+                except ServiceProvider.DoesNotExist:
+                    # Try without www if original had www
+                    if host.startswith('www.'):
+                        try:
+                            provider = ServiceProvider.objects.get(
+                                custom_domain__iexact=host,
+                                is_active=True
+                            )
+                        except ServiceProvider.DoesNotExist:
+                            pass
+            
+            if provider:
                 request.custom_domain_provider = provider
                 request.is_custom_domain = True
                 
-            except ServiceProvider.DoesNotExist:
-                # Also check with www prefix
-                if host.startswith('www.'):
-                    try:
-                        provider = ServiceProvider.objects.get(
-                            custom_domain=host[4:],  # Remove www.
-                            domain_verified=True,
-                            is_active=True
-                        )
-                        request.custom_domain_provider = provider
-                        request.is_custom_domain = True
-                    except ServiceProvider.DoesNotExist:
-                        pass
-                else:
-                    # Try with www prefix
-                    try:
-                        provider = ServiceProvider.objects.get(
-                            custom_domain=f'www.{host}',
-                            domain_verified=True,
-                            is_active=True
-                        )
-                        request.custom_domain_provider = provider
-                        request.is_custom_domain = True
-                    except ServiceProvider.DoesNotExist:
-                        pass
+                # Redirect to provider's booking page if at root
+                if request.path == '/' or request.path == '':
+                    return redirect('appointments:public_booking', slug=provider.unique_booking_url)
         
         response = self.get_response(request)
         return response
