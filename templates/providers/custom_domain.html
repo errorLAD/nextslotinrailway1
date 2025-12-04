@@ -377,41 +377,20 @@
                         </td>
                         <td><span class="cloudflare-badge"><i class="bi bi-cloud-fill"></i> Proxied (Orange)</span></td>
                     </tr>
-                    <!-- TXT record for verification -->
-                    <tr>
-                        <td><span class="badge bg-secondary px-3 py-2 fs-6">TXT</span></td>
-                        <td>
-                            <code class="bg-warning text-dark p-2 rounded fs-5">{{ txt_record_name }}</code>
-                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ txt_record_name }}', this)">
-                                <i class="bi bi-clipboard"></i>
-                            </button>
-                            <br>
-                            <small class="text-info mt-1 d-block">
-                                <i class="bi bi-star-fill"></i> Your unique TXT record name
-                            </small>
-                        </td>
-                        <td>
-                            <code class="bg-light p-2 rounded text-break" id="txt-value" style="max-width: 250px; display: inline-block; font-size: 0.8rem;">{{ provider.domain_verification_code }}</code>
-                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ provider.domain_verification_code }}', this)">
-                                <i class="bi bi-clipboard"></i>
-                            </button>
-                        </td>
-                        <td><span class="text-muted"><i class="bi bi-cloud-slash"></i> DNS Only (Grey)</span></td>
-                    </tr>
                     
                     {% if cloudflare_status and cloudflare_status.ssl_validation_records %}
                     <!-- Cloudflare SSL Validation Records -->
                     {% for record in cloudflare_status.ssl_validation_records %}
                     <tr class="table-info">
-                        <td><span class="badge bg-info px-3 py-2 fs-6">TXT</span></td>
+                        <td><span class="badge bg-danger px-3 py-2 fs-6">TXT</span></td>
                         <td>
-                            <code class="bg-warning text-dark p-2 rounded">{{ record.txt_name }}</code>
-                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ record.txt_name }}', this)">
+                            <code class="bg-danger text-white p-2 rounded">_acme-challenge</code>
+                            <button class="copy-btn ms-2" onclick="copyToClipboard('_acme-challenge', this)">
                                 <i class="bi bi-clipboard"></i>
                             </button>
                             <br>
                             <small class="text-danger mt-1 d-block">
-                                <i class="bi bi-shield-lock-fill"></i> SSL Certificate Validation
+                                <i class="bi bi-shield-lock-fill"></i> <strong>REQUIRED:</strong> SSL Certificate Validation
                             </small>
                         </td>
                         <td>
@@ -430,13 +409,13 @@
                     <tr class="table-warning">
                         <td><span class="badge bg-warning text-dark px-3 py-2 fs-6">TXT</span></td>
                         <td>
-                            <code class="bg-warning text-dark p-2 rounded">{{ cloudflare_status.ownership_verification.name }}</code>
-                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ cloudflare_status.ownership_verification.name }}', this)">
+                            <code class="bg-warning text-dark p-2 rounded">_cf-custom-hostname</code>
+                            <button class="copy-btn ms-2" onclick="copyToClipboard('_cf-custom-hostname', this)">
                                 <i class="bi bi-clipboard"></i>
                             </button>
                             <br>
                             <small class="text-warning mt-1 d-block">
-                                <i class="bi bi-patch-check-fill"></i> Hostname Ownership
+                                <i class="bi bi-patch-check-fill"></i> <strong>REQUIRED:</strong> Hostname Ownership
                             </small>
                         </td>
                         <td>

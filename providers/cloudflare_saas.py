@@ -231,7 +231,10 @@ def verify_custom_hostname(custom_domain: str) -> dict:
         "ssl_verified": ssl_active,
         "fully_active": is_active and ssl_active,
         "status": result.get("status"),
-        "ssl_status": result.get("ssl_status")
+        "ssl_status": result.get("ssl_status"),
+        # Pass through the validation records for the template
+        "ssl_validation_records": result.get("ssl_validation_records", []),
+        "ownership_verification": result.get("ownership_verification", {}),
     }
 
 
