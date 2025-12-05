@@ -1,0 +1,201 @@
+# CNAME Configuration Update - NextSlot Custom Domains
+
+## Overview
+This document outlines the updated CNAME configuration for all service provider custom domains on NextSlot.
+
+## 🎯 Current CNAME Configuration
+
+### Primary CNAME Target
+```
+CNAME Target: customers.nextslot.in
+Zone: nextslot.in (Managed by Cloudflare)
+```
+
+### For okmentor.in (Example)
+```
+Domain: okmentor.in
+Type: CNAME
+Target: customers.nextslot.in
+TTL: 3600 (or Auto)
+```
+
+## 📋 Step-by-Step Setup for Each Provider
+
+### Example: okmentor.in (Anju Mishra)
+
+#### Step 1: Access Domain Registrar
+- Go to your domain registrar (where you purchased okmentor.in)
+- Login to your account
+- Find DNS Management or DNS Settings
+
+#### Step 2: Add CNAME Record
+```
+Name/Host: okmentor.in
+Type: CNAME
+Value: customers.nextslot.in
+TTL: 3600 (or Auto)
+```
+
+#### Step 3: SSL Verification (Optional but Recommended)
+```
+Name: _acme-challenge.okmentor.in
+Type: TXT
+Value: (Will be provided by Cloudflare)
+TTL: 3600
+```
+
+#### Step 4: Wait for DNS Propagation
+- DNS changes take 5-30 minutes to propagate
+- Check status: `nslookup okmentor.in` or use [MXToolbox](https://mxtoolbox.com/)
+
+#### Step 5: Verify Configuration
+Once DNS is propagated, your domain will automatically:
+- Route to: web-production-200fb.up.railway.app (DigitalOcean backend)
+- Get SSL certificate from Cloudflare
+- Display booking page at: okmentor.in/book or okmentor.in
+
+## 🔧 Technical Details
+
+### How Routing Works
+```
+User visits: okmentor.in
+    ↓
+DNS resolves to: customers.nextslot.in (CNAME)
+    ↓
+Cloudflare routes to: web-production-200fb.up.railway.app
+    ↓
+Django middleware detects custom domain
+    ↓
+Routes to: anju-mishra's booking page
+```
+
+### Cloudflare Configuration (Already Set)
+- **Fallback Origin**: web-production-200fb.up.railway.app
+- **SSL Mode**: Full (Strict)
+- **CNAME Flattening**: Enabled
+- **DNS Records**: Custom hostname entries for each provider
+
+## 📊 Provider Domain Configuration
+
+### Database Fields Updated
+Each ServiceProvider now has:
+- `custom_domain`: okmentor.in
+- `cname_target`: customers.nextslot.in
+- `txt_record_name`: _acme-challenge
+- `domain_verified`: True/False
+- `ssl_enabled`: True/False
+- `cloudflare_hostname_id`: Auto-generated
+
+## ✅ Verification Checklist
+
+After setting up CNAME record:
+
+- [ ] CNAME record created at registrar
+- [ ] DNS propagation complete (5-30 minutes)
+- [ ] Domain resolves to customers.nextslot.in
+- [ ] SSL certificate auto-generated
+- [ ] Custom domain shows booking page
+- [ ] Appointments can be booked on custom domain
+
+## 🚀 Testing Commands
+
+### Check DNS Resolution
+```bash
+nslookup okmentor.in
+# Should show: customers.nextslot.in
+```
+
+### Check CNAME Record
+```bash
+dig okmentor.in CNAME
+# Should return CNAME target
+```
+
+### Check SSL Certificate
+```bash
+openssl s_client -connect okmentor.in:443
+# Should show valid certificate
+```
+
+## 🆘 Troubleshooting
+
+### Domain shows 404 error
+- **Cause**: DNS not propagated yet
+- **Solution**: Wait 10-15 minutes and refresh browser cache
+- **Check**: `nslookup okmentor.in`
+
+### SSL certificate not working
+- **Cause**: TXT record not added for validation
+- **Solution**: Add `_acme-challenge.okmentor.in` TXT record from Cloudflare
+- **Check**: Cloudflare dashboard → SSL/TLS → Custom Certificates
+
+### Domain resolves but shows wrong booking page
+- **Cause**: Middleware routing issue
+- **Solution**: Check provider's custom_domain in database matches domain
+- **Check**: Admin panel → Providers → Provider → custom_domain field
+
+### CNAME record rejected by registrar
+- **Cause**: Registrar doesn't allow CNAME at apex
+- **Solution**: Use ALIAS or ANAME record if available, or add @ CNAME if supported
+- **Alternative**: Contact registrar support for CNAME at apex
+
+## 📧 Communication with Providers
+
+### Message Template
+
+---
+
+**Subject**: Custom Domain Setup - okmentor.in
+
+Dear [Provider Name],
+
+To activate your custom domain (okmentor.in), please add the following DNS record to your domain registrar:
+
+**CNAME Record:**
+- **Name/Host**: okmentor.in
+- **Type**: CNAME
+- **Value**: customers.nextslot.in
+- **TTL**: 3600 or Auto
+
+**Steps:**
+1. Login to your domain registrar
+2. Go to DNS Settings
+3. Add/Update the CNAME record above
+4. Save changes (DNS may take 5-30 minutes to update)
+5. Once updated, your booking page will be live!
+
+**Support**: If you need help, visit [your support URL]
+
+---
+
+## 📝 Update Log
+
+### Current Configuration (Updated)
+- **CNAME Target**: customers.nextslot.in
+- **Cloudflare Zone**: nextslot.in
+- **Fallback Origin**: web-production-200fb.up.railway.app
+- **Last Updated**: 2025
+- **Status**: ✅ Active and Configured
+
+### Previous Configurations
+- **proxy-fallback.nextslot.in** (DEPRECATED - Do not use)
+
+## 🔐 Security Notes
+
+1. **CNAME Only**: Providers should ONLY add CNAME records, not A records
+2. **SSL Automatic**: SSL certificates are auto-generated by Cloudflare
+3. **No Direct IP**: Never expose the fallback origin IP directly
+4. **DNS Security**: Keep registrar account secure (2FA recommended)
+
+## 📞 Support Contact
+
+For CNAME configuration issues:
+- Email: support@nextslot.in
+- Technical Support: [Support URL]
+- Documentation: [Docs URL]
+
+---
+
+**Last Updated**: 2025
+**Version**: 2.0 - CNAME Configuration Update
+**Status**: Production Ready ✅
