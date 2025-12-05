@@ -230,7 +230,7 @@
                 <h1><i class="bi bi-globe2 me-3"></i>Custom Domain</h1>
                 <p class="lead mb-3 opacity-90">
                     Connect your own domain for a professional branded booking experience. 
-                    SSL certificates are provided free via Cloudflare.
+                    SSL certificates are provided free via Let's Encrypt (automatic).
                 </p>
                 {% if not provider.has_pro_features %}
                 <div class="alert alert-warning d-inline-block mb-0 py-2 px-3" style="background: rgba(255,255,255,0.9);">
@@ -309,19 +309,20 @@
     
     <!-- DNS Records Table -->
     <div class="mb-4">
-        <h4 class="mb-3"><i class="bi bi-table me-2"></i>Required DNS Records</h4>
+        <h4 class="mb-3"><i class="bi bi-table me-2"></i>Required DNS Record</h4>
         
-        <!-- Important Note -->
-        <div class="alert alert-info mb-3">
+        <!-- Simple DNS Info -->
+        <div class="info-card mb-3">
             <i class="bi bi-info-circle-fill me-2"></i>
-            <strong>Important:</strong> In Cloudflare, the "Name" field should be just the subdomain part (e.g., <code>book</code>), 
-            not the full domain. Cloudflare automatically appends your domain.
+            <strong>Simple Setup:</strong> Add just ONE CNAME record to your domain registrar (GoDaddy, Namecheap, Route53, etc).
+            No Cloudflare configuration needed!
         </div>
         
-        <!-- Unique TXT Record Notice -->
+        <!-- Auto-Renewal Info -->
         <div class="alert alert-success mb-3">
             <i class="bi bi-shield-check me-2"></i>
-            <strong>Your Unique Verification:</strong> The TXT record name and value are unique to your account for verification.
+            <strong>SSL Certificate:</strong> Once DNS is configured, your SSL certificate will be generated automatically 
+            and renewed every 90 days. No action needed!
         </div>
         
         <div class="table-responsive dns-table">
@@ -329,13 +330,13 @@
                 <thead>
                     <tr>
                         <th>Type</th>
-                        <th>Name (Enter in Cloudflare)</th>
-                        <th>Content / Target</th>
-                        <th>Proxy Status</th>
+                        <th>Name / Host</th>
+                        <th>Value / Points To</th>
+                        <th>TTL</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- CNAME for root domain -->
+                    <!-- Simple CNAME Record -->
                     <tr>
                         <td><span class="badge bg-primary px-3 py-2 fs-6">CNAME</span></td>
                         <td>
@@ -345,138 +346,98 @@
                             </button>
                             <br>
                             <small class="text-muted mt-1 d-block">
-                                Use <strong>@</strong> for root domain
+                                Root domain (or use <strong>www</strong> for www.{{ provider.custom_domain }})
                             </small>
                         </td>
                         <td>
-                            <code class="bg-success text-white p-2 rounded fs-5" id="cname-target">{{ default_domain }}</code>
-                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ default_domain }}', this)">
+                            <code class="bg-success text-white p-2 rounded fs-5" id="cname-target">{{ cname_target }}</code>
+                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ cname_target }}', this)">
                                 <i class="bi bi-clipboard"></i>
                             </button>
                         </td>
-                        <td><span class="cloudflare-badge"><i class="bi bi-cloud-fill"></i> Proxied (Orange)</span></td>
+                        <td>
+                            <code class="bg-light p-2 rounded">3600</code>
+                            <button class="copy-btn ms-2" onclick="copyToClipboard('3600', this)">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </td>
                     </tr>
-                    <!-- CNAME for www subdomain -->
-                    <tr>
-                        <td><span class="badge bg-primary px-3 py-2 fs-6">CNAME</span></td>
-                        <td>
-                            <code class="bg-warning text-dark p-2 rounded fs-5">www</code>
-                            <button class="copy-btn ms-2" onclick="copyToClipboard('www', this)">
-                                <i class="bi bi-clipboard"></i>
-                            </button>
-                            <br>
-                            <small class="text-muted mt-1 d-block">
-                                For <strong>www.{{ provider.custom_domain }}</strong>
-                            </small>
-                        </td>
-                        <td>
-                            <code class="bg-success text-white p-2 rounded fs-5">{{ default_domain }}</code>
-                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ default_domain }}', this)">
-                                <i class="bi bi-clipboard"></i>
-                            </button>
-                        </td>
-                        <td><span class="cloudflare-badge"><i class="bi bi-cloud-fill"></i> Proxied (Orange)</span></td>
-                    </tr>
-                    
-                    {% if cloudflare_status and cloudflare_status.ssl_validation_records %}
-                    <!-- Cloudflare SSL Validation Records -->
-                    {% for record in cloudflare_status.ssl_validation_records %}
-                    <tr class="table-info">
-                        <td><span class="badge bg-danger px-3 py-2 fs-6">TXT</span></td>
-                        <td>
-                            <code class="bg-danger text-white p-2 rounded">_acme-challenge</code>
-                            <button class="copy-btn ms-2" onclick="copyToClipboard('_acme-challenge', this)">
-                                <i class="bi bi-clipboard"></i>
-                            </button>
-                            <br>
-                            <small class="text-danger mt-1 d-block">
-                                <i class="bi bi-shield-lock-fill"></i> <strong>REQUIRED:</strong> SSL Certificate Validation
-                            </small>
-                        </td>
-                        <td>
-                            <code class="bg-light p-2 rounded text-break" style="max-width: 250px; display: inline-block; font-size: 0.75rem;">{{ record.txt_value }}</code>
-                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ record.txt_value }}', this)">
-                                <i class="bi bi-clipboard"></i>
-                            </button>
-                        </td>
-                        <td><span class="text-muted"><i class="bi bi-cloud-slash"></i> DNS Only (Grey)</span></td>
-                    </tr>
-                    {% endfor %}
-                    {% endif %}
-                    
-                    {% if cloudflare_status and cloudflare_status.ownership_verification and cloudflare_status.ownership_verification.name %}
-                    <!-- Cloudflare Ownership Verification -->
-                    <tr class="table-warning">
-                        <td><span class="badge bg-warning text-dark px-3 py-2 fs-6">TXT</span></td>
-                        <td>
-                            <code class="bg-warning text-dark p-2 rounded">_cf-custom-hostname</code>
-                            <button class="copy-btn ms-2" onclick="copyToClipboard('_cf-custom-hostname', this)">
-                                <i class="bi bi-clipboard"></i>
-                            </button>
-                            <br>
-                            <small class="text-warning mt-1 d-block">
-                                <i class="bi bi-patch-check-fill"></i> <strong>REQUIRED:</strong> Hostname Ownership
-                            </small>
-                        </td>
-                        <td>
-                            <code class="bg-light p-2 rounded text-break" style="max-width: 250px; display: inline-block; font-size: 0.75rem;">{{ cloudflare_status.ownership_verification.value }}</code>
-                            <button class="copy-btn ms-2" onclick="copyToClipboard('{{ cloudflare_status.ownership_verification.value }}', this)">
-                                <i class="bi bi-clipboard"></i>
-                            </button>
-                        </td>
-                        <td><span class="text-muted"><i class="bi bi-cloud-slash"></i> DNS Only (Grey)</span></td>
-                    </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-            
-            <!-- Cloudflare for SaaS Note -->
-            <div class="alert alert-info mt-3">
-                <i class="bi bi-info-circle-fill me-2"></i>
-                <strong>Important:</strong> After adding these records, check <strong>SSL/TLS → Custom Hostnames</strong> in Cloudflare (nextslot.in zone) for any additional TXT records required for SSL validation. 
-                Add those TXT records to your domain's DNS as well.
-            </div>
-        </div>
                 </tbody>
             </table>
         </div>
-        
-        <!-- Step by Step Guide -->
-        <div class="card mt-4 border-0 shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="bi bi-list-ol me-2"></i>Step-by-Step Cloudflare Setup</h5>
-            </div>
-            <div class="card-body">
-                <ol class="mb-0">
+    </div>
+    
+    <!-- Setup Instructions -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="step-card">
+                <h5 class="mb-3"><i class="bi bi-list-check me-2"></i>Setup Instructions</h5>
+                <ol class="ps-3">
                     <li class="mb-3">
-                        <strong>Go to Cloudflare Dashboard</strong> → Select your domain → Click <strong>DNS</strong> in the sidebar
+                        <strong>Go to your domain registrar</strong> (GoDaddy, Namecheap, Google Domains, Route53, etc)
+                    </li>
+                    <li class="mb-3">
+                        <strong>Find DNS Settings</strong> - Look for DNS Management or DNS Settings
                     </li>
                     <li class="mb-3">
                         <strong>Add CNAME Record:</strong>
-                        <ul class="mt-2">
-                            <li>Click <strong>"Add record"</strong></li>
-                            <li>Type: Select <code>CNAME</code></li>
-                            <li>Name: Enter <code class="bg-warning px-2 py-1 rounded">{{ provider.custom_domain|get_subdomain }}</code></li>
-                            <li>Target: Enter <code class="bg-success text-white px-2 py-1 rounded">{{ default_domain }}</code></li>
-                            <li>Proxy status: <strong class="text-warning">☁️ Proxied (Orange cloud ON)</strong></li>
-                            <li>Click <strong>Save</strong></li>
-                        </ul>
+                        <div class="bg-light p-3 rounded mt-2">
+                            Type: <code>CNAME</code><br>
+                            Name: <code>@</code> (or <code>www</code>)<br>
+                            Value: <code class="text-success">{{ cname_target }}</code><br>
+                            TTL: <code>3600</code> (or Auto)
+                        </div>
                     </li>
                     <li class="mb-3">
-                        <strong>Add TXT Record:</strong>
-                        <ul class="mt-2">
-                            <li>Click <strong>"Add record"</strong></li>
-                            <li>Type: Select <code>TXT</code></li>
-                            <li>Name: Enter <code class="bg-warning px-2 py-1 rounded">{{ txt_record_name }}</code> <span class="badge bg-info">Your unique TXT name</span></li>
-                            <li>Content: Paste <code class="bg-light px-2 py-1 rounded" style="word-break: break-all;">{{ provider.domain_verification_code }}</code></li>
-                            <li>Click <strong>Save</strong></li>
-                        </ul>
+                        <strong>Save</strong> - Click Save/Apply
                     </li>
-                    <li class="mb-0">
-                        <strong>Configure SSL:</strong> Go to <strong>SSL/TLS</strong> → Set encryption mode to <strong>"Full (Strict)"</strong>
+                    <li class="mb-3">
+                        <strong>Wait for DNS</strong> - Takes 5 minutes to 24 hours (usually 30 minutes)
+                    </li>
+                    <li class="mb-3">
+                        <strong>SSL Automatic</strong> - Once DNS works, SSL certificate is generated automatically in 5-15 minutes
                     </li>
                 </ol>
+                
+                <div class="success-card mt-4">
+                    <p class="mb-0">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <strong>Your domain will be live at:</strong><br>
+                        <code class="fs-5">https://{{ provider.custom_domain }}</code>
+                    </p>
+                </div>
             </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="step-card">
+                <h5 class="mb-3"><i class="bi bi-clock-history me-2"></i>Timeline</h5>
+                <div class="ps-2">
+                    <p class="mb-3">
+                        <strong class="text-primary">5 min</strong><br>
+                        <small class="text-muted">Add CNAME record</small>
+                    </p>
+                    <hr>
+                    <p class="mb-3">
+                        <strong class="text-info">5-30 min</strong><br>
+                        <small class="text-muted">DNS propagation</small>
+                    </p>
+                    <hr>
+                    <p class="mb-3">
+                        <strong class="text-success">5-15 min</strong><br>
+                        <small class="text-muted">SSL certificate generation</small>
+                    </p>
+                    <hr>
+                    <p class="mb-0">
+                        <strong class="text-success"><i class="bi bi-check-circle-fill"></i> Total: 15-50 min</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
     
@@ -484,14 +445,14 @@
     <div class="row g-4 mb-4">
         <div class="col-md-6">
             <div class="info-card h-100">
-                <h6 class="mb-2"><i class="bi bi-shield-check me-2"></i>SSL Configuration</h6>
-                <p class="mb-0">In Cloudflare SSL/TLS settings, set encryption mode to <strong>"Full (Strict)"</strong> for maximum security.</p>
+                <h6 class="mb-2"><i class="bi bi-shield-check me-2"></i>SSL Certificate</h6>
+                <p class="mb-0">Your SSL certificate is <strong>automatic</strong> via Let's Encrypt. It generates 5-15 minutes after DNS propagates.</p>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="warning-card h-100">
-                <h6 class="mb-2"><i class="bi bi-clock-history me-2"></i>Propagation Time</h6>
-                <p class="mb-0">DNS changes may take <strong>5 minutes to 24 hours</strong> to propagate worldwide.</p>
+            <div class="success-card h-100">
+                <h6 class="mb-2"><i class="bi bi-check-circle me-2"></i>DNS Propagation</h6>
+                <p class="mb-0">Most registrars show DNS changes within <strong>5-30 minutes</strong>. Check with <a href="https://mxtoolbox.com/cname.aspx" target="_blank" class="text-decoration-none">MXToolbox</a>.</p>
             </div>
         </div>
     </div>
@@ -504,8 +465,8 @@
                 <i class="bi bi-arrow-repeat me-2"></i> Verify Domain
             </button>
         </form>
-        <a href="https://dash.cloudflare.com" target="_blank" class="btn btn-dark btn-lg">
-            <i class="bi bi-box-arrow-up-right me-2"></i> Open Cloudflare Dashboard
+        <a href="https://mxtoolbox.com/cname.aspx" target="_blank" class="btn btn-info btn-lg">
+            <i class="bi bi-box-arrow-up-right me-2"></i> Check DNS Status
         </a>
         <button type="button" class="btn btn-outline-danger btn-lg" data-bs-toggle="modal" data-bs-target="#removeDomainModal">
             <i class="bi bi-x-lg me-2"></i> Cancel Setup
