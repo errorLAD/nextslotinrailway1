@@ -1,0 +1,427 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Multiple Custom Domains - {{ provider.business_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .domain-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e0e0e0;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .domain-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .domain-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .domain-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .domain-primary-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .domain-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+    
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .status-active {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .status-failed {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .status-ssl-active {
+        background: #dbeafe;
+        color: #0c4a6e;
+    }
+    
+    .domain-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+        padding: 1rem 0;
+        border-top: 1px solid #f0f0f0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .info-label {
+        font-size: 0.75rem;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+    
+    .info-value {
+        font-weight: 600;
+        color: #333;
+        word-break: break-all;
+    }
+    
+    .domain-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+    
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-primary-sm {
+        background: #667eea;
+        color: white;
+    }
+    
+    .btn-primary-sm:hover {
+        background: #5568d3;
+    }
+    
+    .btn-info-sm {
+        background: #dbeafe;
+        color: #0c4a6e;
+    }
+    
+    .btn-info-sm:hover {
+        background: #bfdbfe;
+    }
+    
+    .btn-danger-sm {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .btn-danger-sm:hover {
+        background: #fecaca;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        background: #f9fafb;
+        border-radius: 12px;
+        border: 2px dashed #e5e7eb;
+    }
+    
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .empty-state-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state-text {
+        color: #666;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border-left: 4px solid #667eea;
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: #666;
+        margin-top: 0.5rem;
+    }
+    
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.95;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 class="hero-title"><i class="bi bi-globe me-2"></i>{{ page_title }}</h1>
+        <p class="hero-subtitle">Manage all your custom domains in one place</p>
+    </div>
+    
+    <!-- Stats Cards -->
+    {% if domains_summary.total_domains > 0 %}
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-number">{{ domains_summary.total_domains }}</div>
+            <div class="stat-label">Total Domains</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: #10b981;">{{ domains_summary.active_domains|length }}</div>
+            <div class="stat-label">Active Domains</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: #f59e0b;">{{ domains_summary.pending_domains|length }}</div>
+            <div class="stat-label">Pending Setup</div>
+        </div>
+        {% if domains_summary.failed_domains|length > 0 %}
+        <div class="stat-card">
+            <div class="stat-number" style="color: #ef4444;">{{ domains_summary.failed_domains|length }}</div>
+            <div class="stat-label">Failed Domains</div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- Add Domain Button -->
+    <div class="mb-4">
+        <a href="{% url 'providers:add_domain' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-lg me-2"></i> Add New Domain
+        </a>
+    </div>
+    
+    <!-- Domains List -->
+    {% if all_domains %}
+        <!-- Primary Domain Section -->
+        {% for domain in all_domains %}
+            {% if domain.is_primary %}
+            <div class="domain-card" style="border: 2px solid #667eea; background: #f8f9ff;">
+                <div class="domain-header">
+                    <div>
+                        <div class="domain-name">
+                            ⭐ {{ domain.domain_name }}
+                            <span class="domain-primary-badge">Primary Domain</span>
+                        </div>
+                        <small class="text-muted">Added {{ domain.added_at|date:"M d, Y" }}</small>
+                    </div>
+                    <span class="domain-status status-{{ domain.get_status_display|lower }}">
+                        <i class="bi bi-{{ domain.ssl_enabled|yesno:'shield-check,clock' }} me-1"></i>
+                        {{ domain.get_status_display }}
+                    </span>
+                </div>
+                
+                <div class="domain-info">
+                    <div class="info-item">
+                        <span class="info-label">Domain Type</span>
+                        <span class="info-value">{{ domain.get_domain_type_display }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">DNS Records</span>
+                        <span class="info-value">{{ domain.get_dns_record_type_display }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">SSL Status</span>
+                        <span class="info-value">
+                            {% if domain.ssl_enabled %}
+                            ✓ Active
+                            {% else %}
+                            ✗ Inactive
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">CNAME Target</span>
+                        <span class="info-value" style="font-family: monospace;">{{ domain.cname_target }}</span>
+                    </div>
+                </div>
+                
+                <div class="domain-actions">
+                    <a href="{% url 'providers:domain_manage' domain.id %}" class="btn btn-sm btn-primary-sm">
+                        <i class="bi bi-gear me-1"></i> Manage
+                    </a>
+                    <a href="{% url 'providers:domain_setup' domain.id %}" class="btn btn-sm btn-info-sm">
+                        <i class="bi bi-info-circle me-1"></i> Setup
+                    </a>
+                    <a href="{% url 'providers:domain_verify' domain.id %}" class="btn btn-sm btn-primary-sm">
+                        <i class="bi bi-check-circle me-1"></i> Verify
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+        
+        <!-- Other Domains Section -->
+        {% for domain in all_domains %}
+            {% if not domain.is_primary %}
+            <div class="domain-card">
+                <div class="domain-header">
+                    <div>
+                        <div class="domain-name">{{ domain.domain_name }}</div>
+                        <small class="text-muted">Added {{ domain.added_at|date:"M d, Y" }}</small>
+                    </div>
+                    <span class="domain-status status-{{ domain.get_status_display|lower }}">
+                        <i class="bi bi-{{ domain.ssl_enabled|yesno:'shield-check,clock' }} me-1"></i>
+                        {{ domain.get_status_display }}
+                    </span>
+                </div>
+                
+                <div class="domain-info">
+                    <div class="info-item">
+                        <span class="info-label">Domain Type</span>
+                        <span class="info-value">{{ domain.get_domain_type_display }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">DNS Records</span>
+                        <span class="info-value">{{ domain.get_dns_record_type_display }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">SSL Status</span>
+                        <span class="info-value">
+                            {% if domain.ssl_enabled %}
+                            ✓ Active
+                            {% else %}
+                            ✗ Inactive
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Status Details</span>
+                        <span class="info-value">{{ domain.verified_at|yesno:"Verified,Pending" }}</span>
+                    </div>
+                </div>
+                
+                <div class="domain-actions">
+                    <a href="{% url 'providers:domain_manage' domain.id %}" class="btn btn-sm btn-primary-sm">
+                        <i class="bi bi-gear me-1"></i> Manage
+                    </a>
+                    <a href="{% url 'providers:domain_setup' domain.id %}" class="btn btn-sm btn-info-sm">
+                        <i class="bi bi-info-circle me-1"></i> Setup
+                    </a>
+                    <a href="{% url 'providers:domain_verify' domain.id %}" class="btn btn-sm btn-primary-sm">
+                        <i class="bi bi-check-circle me-1"></i> Verify
+                    </a>
+                    
+                    {% if domain.status == 'active' %}
+                    <form method="post" action="{% url 'providers:set_primary' domain.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-primary-sm" onclick="return confirm('Make this your primary domain?')">
+                            <i class="bi bi-star me-1"></i> Set Primary
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    {% if not domain.is_primary %}
+                    <form method="post" action="{% url 'providers:remove_domain' domain.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger-sm" onclick="return confirm('Remove this domain?')">
+                            <i class="bi bi-trash me-1"></i> Remove
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-state-icon">🌐</div>
+            <div class="empty-state-title">No Custom Domains Yet</div>
+            <div class="empty-state-text">
+                Add your first custom domain to get your branded booking page live with SSL support.
+            </div>
+            <a href="{% url 'providers:add_domain' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i> Add Your First Domain
+            </a>
+        </div>
+    {% endif %}
+    
+    <!-- Help Section -->
+    <div style="background: #f0f9ff; border-left: 4px solid #0284c7; padding: 1.5rem; border-radius: 8px; margin-top: 3rem;">
+        <h5 style="color: #0c4a6e; margin-bottom: 1rem;"><i class="bi bi-info-circle me-2"></i> Need Help?</h5>
+        <ul style="margin-bottom: 0; color: #0c4a6e;">
+            <li><strong>Add a Domain:</strong> Click "Add New Domain" and enter your domain name (e.g., salon.com)</li>
+            <li><strong>DNS Setup:</strong> Add the CNAME record to your registrar (GoDaddy, Namecheap, Route53, etc)</li>
+            <li><strong>Verify:</strong> Click "Verify" once DNS is configured (usually takes 5-30 minutes)</li>
+            <li><strong>Primary Domain:</strong> Set which domain is your main booking URL</li>
+            <li><strong>SSL Certificate:</strong> Automatic free SSL via Let's Encrypt after verification</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+// Real-time domain status updates (optional)
+document.addEventListener('DOMContentLoaded', function() {
+    // Could add AJAX calls here to refresh domain statuses
+    // Every 30 seconds: fetch domain status from /domains/{id}/status/
+});
+</script>
+{% endblock %}

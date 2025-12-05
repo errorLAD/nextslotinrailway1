@@ -6,6 +6,7 @@ from . import views
 from . import views_cbv
 from . import views_analytics
 from . import domain_views
+from . import views_multi_domain
 
 app_name = 'providers'
 
@@ -27,13 +28,24 @@ urlpatterns = [
     
     # Availability Management removed
     
-    # Custom Domain Management
+    # Custom Domain Management (Single Domain - Legacy)
     path('domain/', domain_views.custom_domain_page, name='custom_domain'),
     path('domain/settings/', domain_views.domain_settings, name='domain_settings'),
     path('domain/add/', domain_views.add_custom_domain, name='add_custom_domain'),
     path('domain/verify/', domain_views.domain_verification, name='domain_verification'),
     path('domain/verify/check/', domain_views.verify_domain, name='verify_domain'),
     path('domain/remove/', domain_views.remove_domain, name='remove_domain'),
+    
+    # Multi-Domain Management (NEW - PRO Feature)
+    path('domains/', views_multi_domain.multi_domains_dashboard, name='multi_domains_dashboard'),
+    path('domains/add/', views_multi_domain.add_domain, name='add_domain'),
+    path('domains/<int:domain_id>/setup/', views_multi_domain.domain_setup, name='domain_setup'),
+    path('domains/<int:domain_id>/verify/', views_multi_domain.domain_verify, name='domain_verify'),
+    path('domains/<int:domain_id>/manage/', views_multi_domain.domain_manage, name='domain_manage'),
+    path('domains/<int:domain_id>/set-primary/', views_multi_domain.set_primary, name='set_primary'),
+    path('domains/<int:domain_id>/remove/', views_multi_domain.remove_domain, name='remove_domain'),
+    path('domains/<int:domain_id>/status/', views_multi_domain.domain_status_json, name='domain_status_json'),
+    path('domains/list/json/', views_multi_domain.domains_list_json, name='domains_list_json'),
     
     # Appointments (Class-Based Views)
     path('appointments/', views_cbv.AppointmentListView.as_view(), name='appointment_list'),
@@ -54,10 +66,10 @@ urlpatterns = [
     # Billing & Subscription
     path('billing/', views_cbv.BillingView.as_view(), name='billing'),
     
-    # Domain Management (PRO feature)
-    path('domains/', domain_views.domain_settings, name='domain_settings'),
-    path('domains/add/', domain_views.add_custom_domain, name='add_custom_domain'),
-    path('domains/verify/', domain_views.domain_verification, name='domain_verification'),
-    path('domains/verify/check/', domain_views.verify_domain, name='verify_domain'),
-    path('domains/remove/', domain_views.remove_domain, name='remove_domain'),
+    # Domain Management (PRO feature) - Legacy
+    path('domains-legacy/', domain_views.domain_settings, name='domain_settings'),
+    path('domains-legacy/add/', domain_views.add_custom_domain, name='add_custom_domain'),
+    path('domains-legacy/verify/', domain_views.domain_verification, name='domain_verification'),
+    path('domains-legacy/verify/check/', domain_views.verify_domain, name='verify_domain'),
+    path('domains-legacy/remove/', domain_views.remove_domain, name='remove_domain'),
 ]

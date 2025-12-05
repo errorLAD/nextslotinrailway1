@@ -740,3 +740,216 @@ class TeamMember(models.Model):
     def __str__(self):
         return f"{self.name} - {self.role_title}"
 
+
+class CustomDomain(models.Model):
+    """
+    Multi-domain support for service providers.
+    Each provider can have multiple custom domains with independent configurations.
+    
+    This replaces the single custom_domain field on ServiceProvider.
+    Supports:
+    - Multiple domains per provider
+    - Different DNS configurations per domain
+    - Independent SSL certificates
+    - Primary domain designation
+    """
+    
+    DOMAIN_TYPE_CHOICES = [
+        ('subdomain', 'Custom Subdomain (e.g., business.nextslot.in)'),
+        ('custom', 'Custom Domain (e.g., www.businessname.com)'),
+    ]
+    
+    DNS_RECORD_TYPE_CHOICES = [
+        ('cname', 'CNAME Record'),
+        ('a_record', 'A Record'),
+        ('both', 'Both CNAME and A Record'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending Verification'),
+        ('dns_configured', 'DNS Configured'),
+        ('dns_verified', 'DNS Verified'),
+        ('ssl_pending', 'SSL Certificate Pending'),
+        ('ssl_active', 'SSL Active'),
+        ('active', 'Active & Live'),
+        ('failed', 'Setup Failed'),
+        ('inactive', 'Inactive'),
+    ]
+    
+    # Relationships
+    service_provider = models.ForeignKey(
+        ServiceProvider,
+        on_delete=models.CASCADE,
+        related_name='custom_domains'
+    )
+    
+    # Domain Information
+    domain_name = models.CharField(
+        max_length=255,
+        help_text='The actual domain (e.g., salon.com, beauty.example.com)'
+    )
+    
+    domain_type = models.CharField(
+        max_length=20,
+        choices=DOMAIN_TYPE_CHOICES,
+        default='subdomain',
+        help_text='Whether this is a subdomain or custom domain'
+    )
+    
+    # DNS Configuration
+    dns_record_type = models.CharField(
+        max_length=20,
+        choices=DNS_RECORD_TYPE_CHOICES,
+        default='cname',
+        help_text='Type of DNS record(s) to use'
+    )
+    
+    cname_target = models.CharField(
+        max_length=255,
+        help_text='CNAME record target (e.g., app.nextslot.in)',
+        default='app.nextslot.in'
+    )
+    
+    a_record_ip = models.CharField(
+        max_length=15,
+        blank=True,
+        null=True,
+        help_text='A record IP address (fallback option)'
+    )
+    
+    # Verification
+    verification_code = models.CharField(
+        max_length=100,
+        unique=True,
+        help_text='Unique verification code for this domain'
+    )
+    
+    txt_record_name = models.CharField(
+        max_length=255,
+        unique=True,
+        help_text='TXT record name for domain verification'
+    )
+    
+    # SSL Configuration
+    ssl_enabled = models.BooleanField(
+        default=False,
+        help_text='Whether SSL/HTTPS is enabled'
+    )
+    
+    ssl_provider = models.CharField(
+        max_length=50,
+        blank=True,
+        default='lets_encrypt',
+        help_text='SSL certificate provider (e.g., letsencrypt, cloudflare)'
+    )
+    
+    ssl_certificate_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text='Certificate ID from SSL provider'
+    )
+    
+    ssl_expiry_date = models.DateField(
+        blank=True,
+        null=True,
+        help_text='When the SSL certificate expires'
+    )
+    
+    # Status & Configuration
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',
+        help_text='Current domain setup status'
+    )
+    
+    is_primary = models.BooleanField(
+        default=False,
+        help_text='Whether this is the primary/main domain for the provider'
+    )
+    
+    is_active = models.BooleanField(
+        default=True,
+        help_text='Whether this domain is currently active'
+    )
+    
+    # Metadata
+    added_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text='When this domain was added'
+    )
+    
+    verified_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text='When domain verification was completed'
+    )
+    
+    ssl_generated_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text='When SSL certificate was generated'
+    )
+    
+    last_verified_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text='Last successful verification check'
+    )
+    
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text='Last update to this domain record'
+    )
+    
+    # Notes
+    admin_notes = models.TextField(
+        blank=True,
+        help_text='Admin notes about this domain setup'
+    )
+    
+    class Meta:
+        verbose_name = 'Custom Domain'
+        verbose_name_plural = 'Custom Domains'
+        unique_together = ['service_provider', 'domain_name']  # One provider, one domain
+        ordering = ['-is_primary', '-added_at']
+        indexes = [
+            models.Index(fields=['service_provider', 'is_active']),
+            models.Index(fields=['status']),
+            models.Index(fields=['domain_name']),
+        ]
+    
+    def __str__(self):
+        primary = '⭐ ' if self.is_primary else ''
+        return f"{primary}{self.domain_name} ({self.get_status_display()})"
+    
+    def get_access_url(self):
+        """Get the full URL for accessing this domain."""
+        protocol = 'https' if self.ssl_enabled else 'http'
+        return f"{protocol}://{self.domain_name}"
+    
+    def is_verified(self):
+        """Check if domain is fully verified and active."""
+        return self.status == 'active' and self.is_active
+    
+    def needs_renewal(self):
+        """Check if SSL certificate needs renewal (expires in < 30 days)."""
+        if not self.ssl_expiry_date:
+            return False
+        days_until_expiry = (self.ssl_expiry_date - timezone.now().date()).days
+        return days_until_expiry < 30
+    
+    def mark_verified(self):
+        """Mark domain as fully verified."""
+        self.status = 'active'
+        self.verified_at = timezone.now()
+        self.save(update_fields=['status', 'verified_at', 'updated_at'])
+    
+    def mark_failed(self, reason=''):
+        """Mark domain setup as failed."""
+        self.status = 'failed'
+        if reason:
+            self.admin_notes = f"Failed: {reason}\n{self.admin_notes}"
+        self.save(update_fields=['status', 'admin_notes', 'updated_at'])
+

@@ -1,0 +1,381 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Custom Domain - {{ provider.business_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .add-domain-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .form-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-help {
+        font-size: 0.875rem;
+        color: #666;
+        margin-top: 0.5rem;
+    }
+    
+    .form-example {
+        background: #f9fafb;
+        border-left: 3px solid #667eea;
+        padding: 0.75rem 1rem;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        color: #555;
+        font-family: monospace;
+        margin-top: 0.5rem;
+    }
+    
+    .radio-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .radio-option {
+        flex: 1;
+        position: relative;
+    }
+    
+    .radio-option input[type="radio"] {
+        display: none;
+    }
+    
+    .radio-label {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: white;
+    }
+    
+    .radio-option input[type="radio"]:checked + .radio-label {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+    
+    .radio-label strong {
+        color: #333;
+        margin-bottom: 0.25rem;
+    }
+    
+    .radio-label small {
+        color: #666;
+        font-size: 0.875rem;
+    }
+    
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn {
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-secondary {
+        background: #e5e7eb;
+        color: #333;
+    }
+    
+    .btn-secondary:hover {
+        background: #d1d5db;
+    }
+    
+    .info-box {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        border-left: 4px solid #0284c7;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+    
+    .info-box h5 {
+        color: #0c4a6e;
+        margin-bottom: 0.5rem;
+    }
+    
+    .info-box p {
+        color: #0c4a6e;
+        margin: 0.5rem 0;
+        font-size: 0.95rem;
+    }
+    
+    .error-message {
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .success-message {
+        background: #d1fae5;
+        border: 1px solid #a7f3d0;
+        color: #065f46;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="add-domain-container">
+        <!-- Back Link -->
+        <a href="{% url 'providers:multi_domains_dashboard' %}" class="btn-link mb-3">
+            <i class="bi bi-arrow-left me-2"></i> Back to Domains
+        </a>
+        
+        <!-- Info Box -->
+        <div class="info-box">
+            <h5><i class="bi bi-info-circle me-2"></i> Getting Started</h5>
+            <p>You can add custom domains that point to your booking page. Choose between:</p>
+            <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                <li><strong>Custom Domain:</strong> Your own domain (e.g., salon.com, www.businessname.com)</li>
+                <li><strong>Subdomain:</strong> A subdomain under nextslot.in (e.g., mysalon.nextslot.in)</li>
+            </ul>
+        </div>
+        
+        <!-- Form Card -->
+        <div class="form-card">
+            <h2 style="margin-bottom: 2rem; color: #333;">
+                <i class="bi bi-globe me-2"></i> Add New Domain
+            </h2>
+            
+            {% if messages %}
+            {% for message in messages %}
+                <div class="{% if message.tags %}{{ message.tags }}{% endif %}-message">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            {% endif %}
+            
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <!-- Domain Name -->
+                <div class="form-group">
+                    <label class="form-label" for="domain_name">
+                        <i class="bi bi-link-45deg me-2"></i> Domain Name *
+                    </label>
+                    <input 
+                        type="text" 
+                        id="domain_name" 
+                        name="domain_name" 
+                        class="form-control" 
+                        placeholder="e.g., salon.com or mybusiness.com"
+                        required
+                        minlength="5"
+                    >
+                    <div class="form-help">
+                        Enter your domain without www or http://
+                    </div>
+                    <div class="form-example">
+                        ✓ salon.com<br>
+                        ✓ www.businessname.com<br>
+                        ✗ http://salon.com (don't include protocol)
+                    </div>
+                </div>
+                
+                <!-- Domain Type -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="bi bi-diagram-3 me-2"></i> Domain Type *
+                    </label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input 
+                                type="radio" 
+                                id="type_custom" 
+                                name="domain_type" 
+                                value="custom" 
+                                checked
+                            >
+                            <label for="type_custom" class="radio-label">
+                                <strong>Custom Domain</strong>
+                                <small>salon.com, businessname.com</small>
+                            </label>
+                        </div>
+                        <div class="radio-option">
+                            <input 
+                                type="radio" 
+                                id="type_subdomain" 
+                                name="domain_type" 
+                                value="subdomain"
+                            >
+                            <label for="type_subdomain" class="radio-label">
+                                <strong>Subdomain</strong>
+                                <small>mysalon.nextslot.in</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DNS Record Type -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="bi bi-server me-2"></i> DNS Record Type *
+                    </label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input 
+                                type="radio" 
+                                id="dns_cname" 
+                                name="dns_record_type" 
+                                value="cname" 
+                                checked
+                            >
+                            <label for="dns_cname" class="radio-label">
+                                <strong>CNAME</strong>
+                                <small>Recommended (easier)</small>
+                            </label>
+                        </div>
+                        <div class="radio-option">
+                            <input 
+                                type="radio" 
+                                id="dns_a" 
+                                name="dns_record_type" 
+                                value="a_record"
+                            >
+                            <label for="dns_a" class="radio-label">
+                                <strong>A Record</strong>
+                                <small>Fallback option</small>
+                            </label>
+                        </div>
+                        <div class="radio-option">
+                            <input 
+                                type="radio" 
+                                id="dns_both" 
+                                name="dns_record_type" 
+                                value="both"
+                            >
+                            <label for="dns_both" class="radio-label">
+                                <strong>Both</strong>
+                                <small>Maximum compatibility</small>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-help" style="margin-top: 1rem;">
+                        <strong>CNAME:</strong> Works with most registrars (GoDaddy, Namecheap, Route53)<br>
+                        <strong>A Record:</strong> Use if CNAME is not available<br>
+                        <strong>Both:</strong> Set up both for maximum compatibility
+                    </div>
+                </div>
+                
+                <!-- Buttons -->
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-2"></i> Add Domain
+                    </button>
+                    <a href="{% url 'providers:multi_domains_dashboard' %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+        <!-- FAQ Section -->
+        <div style="margin-top: 3rem; padding: 1.5rem; background: #f9fafb; border-radius: 8px;">
+            <h5 style="color: #333; margin-bottom: 1rem;">
+                <i class="bi bi-question-circle me-2"></i> Common Questions
+            </h5>
+            
+            <details style="margin-bottom: 1rem;">
+                <summary style="cursor: pointer; font-weight: 600; color: #333;">
+                    What's the difference between CNAME and A records?
+                </summary>
+                <div style="margin-top: 0.75rem; color: #666; line-height: 1.6;">
+                    <strong>CNAME:</strong> Points your domain to another domain (e.g., app.nextslot.in). Easier to set up and maintain.<br>
+                    <strong>A Record:</strong> Points your domain directly to an IP address. More stable if IP doesn't change.<br>
+                    <strong>Recommendation:</strong> Use CNAME for simplicity.
+                </div>
+            </details>
+            
+            <details style="margin-bottom: 1rem;">
+                <summary style="cursor: pointer; font-weight: 600; color: #333;">
+                    How long does it take for my domain to work?
+                </summary>
+                <div style="margin-top: 0.75rem; color: #666; line-height: 1.6;">
+                    DNS propagation typically takes 5-30 minutes, but can take up to 48 hours. SSL certificate generation takes 5-15 minutes after DNS verification. You can check DNS status at <a href="https://mxtoolbox.com" target="_blank">mxtoolbox.com</a>.
+                </div>
+            </details>
+            
+            <details style="margin-bottom: 1rem;">
+                <summary style="cursor: pointer; font-weight: 600; color: #333;">
+                    Do I need to renew my SSL certificate?
+                </summary>
+                <div style="margin-top: 0.75rem; color: #666; line-height: 1.6;">
+                    No! Your SSL certificate is provided free via Let's Encrypt and automatically renews every 90 days. You don't need to do anything.
+                </div>
+            </details>
+            
+            <details>
+                <summary style="cursor: pointer; font-weight: 600; color: #333;">
+                    Can I have multiple domains?
+                </summary>
+                <div style="margin-top: 0.75rem; color: #666; line-height: 1.6;">
+                    Yes! As a PRO user, you can add multiple domains and choose which one is your primary domain. All your existing bookings will work on all domains.
+                </div>
+            </details>
+        </div>
+    </div>
+</div>
+{% endblock %}
