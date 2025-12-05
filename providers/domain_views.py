@@ -281,7 +281,7 @@ def verify_domain(request):
     if success:
         messages.success(request, 'Domain verified successfully! Your custom domain is now active with SSL.')
     else:
-        messages.warning(request, message + ' Make sure DNS records are configured in Cloudflare and propagated (may take up to 24 hours).')
+        messages.warning(request, message + ' Make sure DNS records are configured at your domain registrar and propagated (may take up to 48 hours).')
     
     return redirect('providers:custom_domain')
 

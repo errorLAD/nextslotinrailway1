@@ -56,6 +56,16 @@ DIGITALOCEAN_APP_DOMAIN = config('DIGITALOCEAN_APP_DOMAIN', default='my-booking-
 if DIGITALOCEAN_APP_DOMAIN not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(DIGITALOCEAN_APP_DOMAIN)
 
+# ============================================================================
+# DEPRECATED: Cloudflare Settings (No Longer Used)
+# ============================================================================
+# These settings are kept for backward compatibility but are no longer used.
+# We now use simple DNS records with DigitalOcean/Let's Encrypt instead.
+CLOUDFLARE_API_TOKEN = config('CLOUDFLARE_API_TOKEN', default='')
+CLOUDFLARE_ZONE_ID = config('CLOUDFLARE_ZONE_ID', default='')
+CLOUDFLARE_ACCOUNT_ID = config('CLOUDFLARE_ACCOUNT_ID', default='')
+CLOUDFLARE_CNAME_TARGET = config('CLOUDFLARE_CNAME_TARGET', default='customers.nextslot.in')
+
 # Add the default domain to ALLOWED_HOSTS if not already present
 if DEFAULT_DOMAIN not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(DEFAULT_DOMAIN)
