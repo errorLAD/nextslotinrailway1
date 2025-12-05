@@ -118,6 +118,12 @@ def get_custom_hostname(custom_domain: str) -> dict:
     """
     Get the status of a custom hostname.
     
+    Cloudflare hostname statuses:
+    - "active": Fully active and ready to use
+    - "pending": Waiting for DNS CNAME record
+    - "moved": Domain was moved (but still works)
+    - "deleted": Domain was deleted
+    
     Args:
         custom_domain: The customer's domain
         
@@ -152,12 +158,17 @@ def get_custom_hostname(custom_domain: str) -> dict:
                 # Extract ownership verification
                 ownership_verification = result.get("ownership_verification", {})
                 
+                # Accept both "active" and "moved" statuses as valid
+                # "moved" means domain changed but still works
+                hostname_status = result.get("status", "")
+                is_active = hostname_status in ["active", "moved"]
+                
                 return {
                     "success": True,
                     "hostname_id": result.get("id"),
-                    "status": result.get("status"),
+                    "status": hostname_status,
                     "ssl_status": ssl_info.get("status"),
-                    "is_active": result.get("status") == "active",
+                    "is_active": is_active,
                     "ssl_validation_records": validation_records,
                     "ownership_verification": ownership_verification,
                     "ownership_verification_http": result.get("ownership_verification_http", {}),
@@ -211,27 +222,58 @@ def verify_custom_hostname(custom_domain: str) -> dict:
     """
     Check if a custom hostname is fully active and verified.
     
+    Cloudflare hostname statuses:
+    - "active": Domain is fully active and working
+    - "moved": Domain was moved but still works
+    - "pending": Waiting for DNS configuration
+    
+    SSL statuses:
+    - "active": SSL certificate is issued and active
+    - "pending_validation": Waiting for SSL validation
+    
     Args:
         custom_domain: The customer's domain
         
     Returns:
-        dict with verification status
+        dict with verification status and detailed messages
     """
     result = get_custom_hostname(custom_domain)
     
     if not result.get("success"):
         return result
     
+    hostname_status = result.get("status", "unknown")
+    ssl_status = result.get("ssl_status", "unknown")
     is_active = result.get("is_active", False)
-    ssl_active = result.get("ssl_status") == "active"
+    ssl_active = ssl_status == "active"
+    
+    # Build status messages
+    messages = []
+    
+    if hostname_status == "active":
+        messages.append("✓ Hostname ownership verified (status: active)")
+    elif hostname_status == "moved":
+        messages.append("✓ Hostname ownership verified (status: moved - domain was updated)")
+    elif hostname_status == "pending":
+        messages.append("⏳ Waiting for hostname ownership verification (ensure CNAME record is added)")
+    else:
+        messages.append(f"Hostname status: {hostname_status}")
+    
+    if ssl_status == "active":
+        messages.append("✓ SSL certificate is active and valid")
+    elif ssl_status == "pending_validation":
+        messages.append("⏳ SSL certificate validation in progress (may take up to 24 hours)")
+    else:
+        messages.append(f"SSL status: {ssl_status}")
     
     return {
         "success": True,
         "hostname_verified": is_active,
         "ssl_verified": ssl_active,
         "fully_active": is_active and ssl_active,
-        "status": result.get("status"),
-        "ssl_status": result.get("ssl_status"),
+        "status": hostname_status,
+        "ssl_status": ssl_status,
+        "messages": messages,
         # Pass through the validation records for the template
         "ssl_validation_records": result.get("ssl_validation_records", []),
         "ownership_verification": result.get("ownership_verification", {}),
