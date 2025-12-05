@@ -151,6 +151,17 @@
             color: var(--primary);
         }
         
+        /* HERO ILLUSTRATION */
+        .hero-illustration {
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        
         /* AUTH CARDS SECTION - PROMINENT */
         .auth-section {
             padding: 120px 20px; background: linear-gradient(180deg, white 0%, #f8fdf9 100%);
@@ -492,8 +503,84 @@
                     </p>
                 </div>
                 <div class="col-lg-6">
-                    <div style="background: linear-gradient(135deg, rgba(13,148,136,0.1) 0%, rgba(99,102,241,0.1) 100%); border-radius: 20px; height: 500px; display: flex; align-items: center; justify-content: center; font-size: 5rem; color: rgba(13,148,136,0.2);">
-                        <i class="bi bi-calendar2-event"></i>
+                    <div class="hero-illustration">
+                        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; max-width: 500px;">
+                            <!-- Background circle -->
+                            <circle cx="200" cy="200" r="180" fill="rgba(13,148,136,0.08)" opacity="0.5"/>
+                            <circle cx="200" cy="200" r="150" fill="rgba(99,102,241,0.08)" opacity="0.5"/>
+                            
+                            <!-- Calendar card -->
+                            <g transform="translate(100, 80)">
+                                <!-- Card shadow -->
+                                <rect x="0" y="10" width="200" height="240" rx="12" fill="rgba(0,0,0,0.1)" filter="blur(10)"/>
+                                
+                                <!-- Main card -->
+                                <rect x="0" y="0" width="200" height="240" rx="12" fill="white" stroke="rgba(13,148,136,0.3)" stroke-width="2"/>
+                                
+                                <!-- Header bar -->
+                                <rect x="0" y="0" width="200" height="40" rx="12" fill="url(#cardGradient)" stroke="none"/>
+                                
+                                <!-- Days text -->
+                                <text x="100" y="25" font-family="Poppins" font-size="14" font-weight="600" fill="white" text-anchor="middle">November 2025</text>
+                                
+                                <!-- Calendar grid -->
+                                <g font-family="Inter" font-size="11" fill="rgba(15,23,42,0.6)">
+                                    <!-- Row 1 -->
+                                    <text x="15" y="65">1</text><text x="45" y="65">2</text><text x="75" y="65">3</text>
+                                    <text x="105" y="65">4</text><text x="135" y="65">5</text><text x="165" y="65">6</text>
+                                    <text x="185" y="65">7</text>
+                                    
+                                    <!-- Row 2 -->
+                                    <text x="15" y="95">8</text><text x="45" y="95">9</text><text x="75" y="95">10</text>
+                                    <text x="105" y="95">11</text><text x="135" y="95">12</text><text x="165" y="95">13</text>
+                                    <text x="185" y="95">14</text>
+                                    
+                                    <!-- Row 3 with highlight -->
+                                    <text x="15" y="125">15</text><text x="45" y="125">16</text><text x="75" y="125">17</text>
+                                    <circle cx="100" cy="118" r="12" fill="rgba(13,148,136,0.2)"/>
+                                    <text x="105" y="125" fill="#0d9488" font-weight="700">18</text>
+                                    <text x="135" y="125">19</text><text x="165" y="125">20</text>
+                                    <text x="185" y="125">21</text>
+                                    
+                                    <!-- Row 4 -->
+                                    <text x="15" y="155">22</text><text x="45" y="155">23</text><text x="75" y="155">24</text>
+                                    <text x="105" y="155">25</text><text x="135" y="155">26</text><text x="165" y="155">27</text>
+                                    <text x="185" y="155">28</text>
+                                    
+                                    <!-- Row 5 -->
+                                    <text x="15" y="185">29</text><text x="45" y="185">30</text>
+                                </g>
+                            </g>
+                            
+                            <!-- Checkmark icon -->
+                            <g transform="translate(280, 120)">
+                                <circle cx="0" cy="0" r="35" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.4)" stroke-width="2"/>
+                                <path d="M -12 0 L -2 10 L 15 -8" stroke="#10b981" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </g>
+                            
+                            <!-- Clock icon -->
+                            <g transform="translate(80, 280)">
+                                <circle cx="0" cy="0" r="30" fill="rgba(99,102,241,0.15)" stroke="rgba(99,102,241,0.4)" stroke-width="2"/>
+                                <circle cx="0" cy="0" r="18" fill="none" stroke="#6366f1" stroke-width="2"/>
+                                <line x1="0" y1="-8" x2="0" y2="0" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="8" y1="0" x2="0" y2="0" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
+                            </g>
+                            
+                            <!-- Bell notification icon -->
+                            <g transform="translate(300, 280)">
+                                <circle cx="0" cy="0" r="30" fill="rgba(249,115,22,0.15)" stroke="rgba(249,115,22,0.4)" stroke-width="2"/>
+                                <path d="M -6 -8 L 6 -8 L 8 0 C 8 6 4 10 0 10 C -4 10 -8 6 -8 0 Z" fill="none" stroke="#f97316" stroke-width="2" stroke-linejoin="round"/>
+                                <circle cx="0" cy="12" r="2" fill="#f97316"/>
+                            </g>
+                            
+                            <!-- Gradients -->
+                            <defs>
+                                <linearGradient id="cardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#0d9488;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#14b8a6;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
                     </div>
                 </div>
             </div>
