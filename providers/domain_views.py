@@ -187,25 +187,30 @@ def add_custom_domain(request):
             if cf_result.get('success'):
                 # Store Cloudflare hostname ID for later management
                 provider.cloudflare_hostname_id = cf_result.get('hostname_id', '')
+                ssl_status = cf_result.get('ssl_status', 'pending_validation')
                 provider.save(update_fields=['cloudflare_hostname_id'])
                 
-                cname_target = get_cname_target()
+                # Use Custom Hostnames API - no manual CNAME needed!
                 messages.success(
                     request, 
-                    f'✅ Domain "{domain}" has been registered! '
-                    f'Now add a CNAME record pointing to: {cname_target}'
+                    f'✅ Domain "{domain}" has been registered with Cloudflare! '
+                    f'Cloudflare is now provisioning your SSL certificate. '
+                    f'This typically takes 5-30 minutes. You\'ll be notified when ready. '
+                    f'No manual DNS configuration needed!'
                 )
             elif cf_result.get('manual_setup_required'):
                 # Cloudflare not configured, fall back to manual process
-                messages.info(
-                    request, 
-                    f'Domain "{domain}" added. Please configure DNS and contact support for activation.'
-                )
-            else:
                 messages.warning(
                     request, 
-                    f'Domain "{domain}" added but automatic setup failed: {cf_result.get("error")}. '
-                    f'Please contact support.'
+                    f'Cloudflare integration not configured. '
+                    f'Please contact support to enable automatic domain provisioning.'
+                )
+            else:
+                error = cf_result.get("error", "Unknown error")
+                messages.error(
+                    request, 
+                    f'Domain "{domain}" setup failed: {error}. '
+                    f'Please try again or contact support.'
                 )
         return redirect('providers:custom_domain')
     else:
