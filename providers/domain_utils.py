@@ -138,11 +138,11 @@ def verify_domain_dns(domain, expected_cname=None, expected_txt=None, txt_record
 def generate_unique_cname_target(provider):
     """
     Get the CNAME target for a provider.
-    All providers point to the same Railway app domain.
+    All providers point to the same DigitalOcean app domain.
     The unique identification is done via the custom domain itself.
     
     IMPORTANT: Every service provider uses the SAME CNAME target
-    because we have one Railway app domain. The uniqueness comes from:
+    because we have one DigitalOcean app domain. The uniqueness comes from:
     1. Each provider's unique custom domain (e.g., salon1.com, salon2.com)
     2. Each provider's unique TXT record verification name (_bv-salon-name)
     3. Middleware routing based on the Host header
@@ -151,11 +151,12 @@ def generate_unique_cname_target(provider):
         provider (ServiceProvider): The provider to generate CNAME for
         
     Returns:
-        str: CNAME target (the Railway app domain - same for all providers)
+        str: CNAME target (the DigitalOcean app domain - same for all providers)
     """
-    # All providers use the same CNAME target - the Railway app domain
+    # All providers use the same CNAME target - the DigitalOcean app domain
+    # Example: nextslot-app.ondigitalocean.app
     # This is the correct configuration for a multi-tenant SaaS application
-    cname_target = getattr(settings, 'RAILWAY_DOMAIN', 'web-production-200fb.up.railway.app')
+    cname_target = getattr(settings, 'DIGITALOCEAN_APP_DOMAIN', 'nextslot-app.ondigitalocean.app')
     
     # Store the CNAME target for reference if not already set
     if not provider.cname_target:

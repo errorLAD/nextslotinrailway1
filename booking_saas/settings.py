@@ -23,9 +23,15 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,web-product
 DEFAULT_DOMAIN = config('DEFAULT_DOMAIN', default='nextslot.in')
 DEFAULT_SCHEME = config('DEFAULT_SCHEME', default='https')
 
-# Railway app domain - this is what custom domains should CNAME to
-# This is your Railway app's .railway.app domain
-RAILWAY_DOMAIN = config('RAILWAY_DOMAIN', default='web-production-200fb.up.railway.app')
+# ============================================================================
+# DIGITALOCEAN APP PLATFORM CONFIGURATION
+# ============================================================================
+# DigitalOcean app domain - this is what custom domains should CNAME to
+# Example: nextslot-app.ondigitalocean.app
+DIGITALOCEAN_APP_DOMAIN = config('DIGITALOCEAN_APP_DOMAIN', default='nextslot-app.ondigitalocean.app')
+
+# For backward compatibility, also set RAILWAY_DOMAIN (not used but kept for compatibility)
+RAILWAY_DOMAIN = config('RAILWAY_DOMAIN', default=DIGITALOCEAN_APP_DOMAIN)
 
 # Cloudflare Configuration (for custom domain SSL & DNS)
 CLOUDFLARE_API_TOKEN = config('CLOUDFLARE_API_TOKEN', default='')
@@ -34,7 +40,8 @@ CLOUDFLARE_ACCOUNT_ID = config('CLOUDFLARE_ACCOUNT_ID', default='')
 
 # Cloudflare for SaaS - CNAME target for custom domains
 # Customers point their domains to this (e.g., customers.nextslot.in)
-CLOUDFLARE_CNAME_TARGET = config('CLOUDFLARE_CNAME_TARGET', default=f'customers.{DEFAULT_DOMAIN}')
+# This should be the DigitalOcean app domain
+CLOUDFLARE_CNAME_TARGET = config('CLOUDFLARE_CNAME_TARGET', default=DIGITALOCEAN_APP_DOMAIN)
 
 # Add the default domain to ALLOWED_HOSTS if not already present
 if DEFAULT_DOMAIN not in ALLOWED_HOSTS:
