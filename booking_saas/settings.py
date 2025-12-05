@@ -17,14 +17,14 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-produc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,web-production-200fb.up.railway.app').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,*.ondigitalocean.app').split(',')
 
 # Domain configuration
 DEFAULT_DOMAIN = config('DEFAULT_DOMAIN', default='nextslot.in')
 DEFAULT_SCHEME = config('DEFAULT_SCHEME', default='https')
 
 # ============================================================================
-# CUSTOM DOMAIN CONFIGURATION FOR SERVICE PROVIDERS
+# HOSTING CONFIGURATION - DigitalOcean App Platform
 # ============================================================================
 # Each service provider gets their own unique subdomain and/or custom domain
 # 
@@ -38,42 +38,55 @@ DEFAULT_SCHEME = config('DEFAULT_SCHEME', default='https')
 #   - john-fitness.com
 #   - okmentor.in
 #
-# For each provider, they CNAME their custom domain to their unique subdomain
-# Example: ramesh-salon.com CNAME -> ramesh-salon.nextslot.in
+# For each provider, they CNAME their custom domain to their subdomain
+# Example: okmentor.in CNAME -> okmentor.nextslot.in
+#          okmentor.nextslot.in CNAME -> your-app.ondigitalocean.app
 
 # Base domain for provider subdomains
 PROVIDER_SUBDOMAIN_BASE = config('PROVIDER_SUBDOMAIN_BASE', default=DEFAULT_DOMAIN)
 
-# DigitalOcean App Platform (fallback/origin server)
-DIGITALOCEAN_APP_DOMAIN = config('DIGITALOCEAN_APP_DOMAIN', default='nextslot-app.ondigitalocean.app')
+# ============================================================================
+# DigitalOcean App Platform Configuration (PRIMARY)
+# ============================================================================
+# Get your DigitalOcean App domain from: App Settings > Domains & HTTPS
+# Example: my-booking-app-abc123.ondigitalocean.app
+DIGITALOCEAN_APP_DOMAIN = config('DIGITALOCEAN_APP_DOMAIN', default='my-booking-app.ondigitalocean.app')
 
-# For backward compatibility, also set RAILWAY_DOMAIN
-RAILWAY_DOMAIN = config('RAILWAY_DOMAIN', default=DIGITALOCEAN_APP_DOMAIN)
-
-# Cloudflare Configuration (for custom domain SSL & DNS)
-CLOUDFLARE_API_TOKEN = config('CLOUDFLARE_API_TOKEN', default='')
-CLOUDFLARE_ZONE_ID = config('CLOUDFLARE_ZONE_ID', default='')
-CLOUDFLARE_ACCOUNT_ID = config('CLOUDFLARE_ACCOUNT_ID', default='')
-
-# NOTE: Each provider now gets a UNIQUE CNAME target based on their unique_booking_url
-# No longer using a single shared CLOUDFLARE_CNAME_TARGET
+# Add DigitalOcean domain to ALLOWED_HOSTS if not already present
+if DIGITALOCEAN_APP_DOMAIN not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(DIGITALOCEAN_APP_DOMAIN)
 
 # Add the default domain to ALLOWED_HOSTS if not already present
 if DEFAULT_DOMAIN not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(DEFAULT_DOMAIN)
 
-# Allow all subdomains of the default domain
+# Allow all subdomains of the default domain (for provider subdomains)
 ALLOWED_HOSTS.append(f'.{DEFAULT_DOMAIN}')
 
 # ============================================================================
-# CUSTOM DOMAIN SUPPORT
+# CUSTOM DOMAIN SUPPORT - Multiple Providers with Independent Domains
 # ============================================================================
-# Allow ANY custom domain - wildcard for all verified custom domains
-# This is needed because providers can add their own domains (e.g., okmentor.in)
-ALLOWED_HOSTS.append('*')  # Accept all hosts - we validate in middleware
+# Each provider can have their own custom domain with independent SSL certificates
+# DNS Setup:
+#   1. Provider's domain CNAME -> provider-slug.nextslot.in
+#   2. provider-slug.nextslot.in CNAME -> your-app.ondigitalocean.app
+#   3. Let's Encrypt auto-generates SSL for both provider domain and subdomain
+#
+# Example for okmentor.in:
+#   okmentor.in CNAME okmentor.nextslot.in
+#   okmentor.nextslot.in CNAME my-booking-app.ondigitalocean.app
+#   Both domains get Let's Encrypt SSL automatically
 
-# For more secure setup, you can use ALLOWED_HOSTS = ['*'] only in production
-# and validate domains in CustomDomainMiddleware
+# Allow ANY custom domain - validated in middleware
+ALLOWED_HOSTS.append('*')  # Accept all hosts - we validate in CustomDomainMiddleware
+
+# ============================================================================
+# SSL/HTTPS Configuration
+# ============================================================================
+# Let's Encrypt automatically provisions SSL for all domains when:
+# 1. DNS records are properly configured
+# 2. Domain resolves to your DigitalOcean app
+# 3. HTTPS is enabled in DigitalOcean App Settings
 
 
 # Application definition
@@ -244,6 +257,35 @@ CELERY_TIMEZONE = TIME_ZONE
 # SSL Configuration for custom domains
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = not DEBUG  # Redirect all non-HTTPS requests to HTTPS in production
+
+# ============================================================================
+# Let's Encrypt SSL Configuration
+# ============================================================================
+# DigitalOcean App Platform automatically manages Let's Encrypt certificates for:
+# 1. All domains listed in your DigitalOcean App Settings
+# 2. All provider custom domains (once DNS is verified)
+#
+# How it works:
+# 1. Provider adds CNAME record in their registrar
+#    Example: okmentor.in CNAME okmentor.nextslot.in
+# 2. okmentor.nextslot.in resolves to your DigitalOcean app
+# 3. DigitalOcean/Let's Encrypt verifies domain ownership
+# 4. SSL certificate is automatically generated (90-day expiry)
+# 5. Certificate auto-renews 30 days before expiry
+#
+# To add a new provider domain to SSL:
+# 1. Provider completes DNS setup (adds CNAME record)
+# 2. Visit domain in browser (wait for DNS propagation ~5-48 hours)
+# 3. DigitalOcean detects new domain and provisions SSL
+# 4. No manual SSL setup needed!
+
+# ACME Challenge for Let's Encrypt verification (DigitalOcean managed)
+# No configuration needed - DigitalOcean handles ACME challenge automatically
+ACME_WELL_KNOWN_URL = '/.well-known/acme-challenge/'
+
+# Custom domain SSL status tracking
+CUSTOM_DOMAIN_SSL_CHECK_INTERVAL = 3600  # Check SSL status every hour (seconds)
+CUSTOM_DOMAIN_VERIFICATION_TIMEOUT = 86400  # 24 hours to verify domain before SSL
 
 # Server email (for error notifications)
 SERVER_EMAIL = DEFAULT_FROM_EMAIL

@@ -47,10 +47,19 @@ class CustomDomainMiddleware:
     """
     Middleware to handle custom domain routing for service providers.
     
-    This middleware checks if the request is coming from a custom domain or subdomain
-    and redirects to the provider's booking page.
+    Supports multiple providers with independent custom domains on DigitalOcean.
     
-    Works with Cloudflare for SaaS - domains don't need to be pre-verified.
+    How it works:
+    1. Provider adds CNAME record: custom-domain.com CNAME -> provider-slug.nextslot.in
+    2. provider-slug.nextslot.in CNAME -> app.ondigitalocean.app (handled in DNS registrar)
+    3. When request comes to custom-domain.com, middleware routes to provider's booking page
+    4. Let's Encrypt automatically generates SSL certificates for all domains
+    
+    Example for okmentor.in:
+    - User visits okmentor.in
+    - Middleware finds provider with custom_domain='okmentor.in'
+    - Redirects to /book/okmentor/ (provider's public booking page)
+    - All served under okmentor.in with Let's Encrypt SSL
     """
     
     def __init__(self, get_response):
@@ -58,7 +67,7 @@ class CustomDomainMiddleware:
     
     def __call__(self, request):
         # Skip for static/media files and admin
-        if request.path.startswith(('/static/', '/media/', '/admin/')):
+        if request.path.startswith(('/static/', '/media/', '/admin/', '/.well-known/')):
             return self.get_response(request)
         
         # Initialize default values
@@ -70,14 +79,25 @@ class CustomDomainMiddleware:
         # Remove www prefix for checking
         check_host = host[4:] if host.startswith('www.') else host
         
-        # Skip if it's the default domain or localhost
+        # Skip if it's the default domain, DigitalOcean domain, or localhost
         default_domain = getattr(settings, 'DEFAULT_DOMAIN', 'nextslot.in')
-        skip_hosts = [default_domain, f'www.{default_domain}', 'localhost', '127.0.0.1', 'customers.' + default_domain]
+        do_domain = getattr(settings, 'DIGITALOCEAN_APP_DOMAIN', 'app.ondigitalocean.app')
         
-        if check_host in skip_hosts or host.endswith('.railway.app') or host.endswith('.up.railway.app'):
+        skip_hosts = [
+            default_domain, 
+            f'www.{default_domain}', 
+            'localhost', 
+            '127.0.0.1', 
+            'customers.' + default_domain,
+            do_domain,
+            f'www.{do_domain}'
+        ]
+        
+        # Skip DigitalOcean App Platform domains
+        if check_host in skip_hosts or host.endswith('.ondigitalocean.app') or host.endswith('.up.railway.app'):
             return self.get_response(request)
         
-        # Check if this is a subdomain of the default domain (e.g., business.nextslot.in)
+        # Check if this is a subdomain of the default domain (e.g., okmentor.nextslot.in)
         if check_host.endswith(f'.{default_domain}'):
             subdomain = check_host.replace(f'.{default_domain}', '')
             if subdomain and subdomain != 'www' and subdomain != 'customers':
@@ -110,10 +130,11 @@ class CustomDomainMiddleware:
                         pass
         else:
             # This is an external custom domain (e.g., okmentor.in)
+            # Each provider can have their own independent custom domain
             # Try to find provider by custom domain (check both with and without www)
             provider = None
             
-            # Try exact match first
+            # Try exact match first (case-insensitive)
             try:
                 provider = ServiceProvider.objects.get(
                     custom_domain__iexact=check_host,

@@ -227,13 +227,19 @@
     <div class="domain-hero">
         <div class="row align-items-center">
             <div class="col-lg-8">
-                <h1><i class="bi bi-globe2 me-3"></i>Custom Domain</h1>
+                <h1><i class="bi bi-globe2 me-3"></i>Custom Domain Setup</h1>
                 <p class="lead mb-3 opacity-90">
-                    Connect your own domain for a professional branded booking experience. 
-                    SSL certificates are provided free via Let's Encrypt (automatic).
+                    Connect your own domain to your booking page on our DigitalOcean infrastructure.
+                    SSL certificates are automatic and free via Let's Encrypt.
+                </p>
+                <p class="opacity-85 mb-0" style="font-size: 0.95rem;">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <strong>Hosting:</strong> DigitalOcean App Platform | 
+                    <strong>SSL:</strong> Let's Encrypt (Auto-renewing every 90 days) | 
+                    <strong>Setup Time:</strong> 5-48 hours
                 </p>
                 {% if not provider.has_pro_features %}
-                <div class="alert alert-warning d-inline-block mb-0 py-2 px-3" style="background: rgba(255,255,255,0.9);">
+                <div class="alert alert-warning d-inline-block mt-3 mb-0 py-2 px-3" style="background: rgba(255,255,255,0.9);">
                     <i class="bi bi-lock-fill me-2"></i> 
                     <strong>PRO Feature:</strong> 
                     <a href="{% url 'subscriptions:upgrade_to_pro' %}" class="text-decoration-underline">Upgrade to PRO</a> to use custom domains.
@@ -313,16 +319,35 @@
         
         <!-- Instructions Info -->
         <div class="info-card mb-4">
-            <h6 class="mb-2"><i class="bi bi-info-circle-fill me-2"></i>How DNS Works</h6>
-            <p class="mb-2">DNS records tell the internet where your domain should point. You need to add records to your domain registrar's DNS settings. These will route traffic to your booking page.</p>
-            <p class="mb-0"><strong>Time to propagate:</strong> Usually 5-30 minutes, but can take up to 48 hours.</p>
+            <h6 class="mb-2"><i class="bi bi-server me-2"></i>DigitalOcean Multi-Domain DNS Setup</h6>
+            <p class="mb-2">
+                <strong>How it works:</strong> Each provider's custom domain needs a CNAME record pointing to their subdomain on nextslot.in. 
+                This allows you to use your own domain while maintaining our DigitalOcean hosting infrastructure.
+            </p>
+            <p class="mb-0">
+                <strong>Example for okmentor.in:</strong><br>
+                <code class="bg-light px-2 py-1">okmentor.in</code> 
+                <span class="text-muted small">CNAME →</span> 
+                <code class="bg-light px-2 py-1">okmentor.nextslot.in</code>
+                <span class="text-muted small">CNAME →</span> 
+                <code class="bg-light px-2 py-1">app.ondigitalocean.app</code>
+            </p>
+            <p class="mb-0 mt-2"><strong>Time to propagate:</strong> Usually 5-30 minutes, but can take up to 48 hours.</p>
         </div>
         
         <!-- CNAME Record (Primary) -->
         <div style="background: #f8fafb; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; border-left: 4px solid #10b981;">
             <div class="d-flex align-items-center mb-3">
                 <span style="background: #10b981; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 1rem;">1</span>
-                <h6 class="mb-0"><i class="bi bi-link-45deg me-2"></i>CNAME Record (Recommended)</h6>
+                <h6 class="mb-0"><i class="bi bi-link-45deg me-2"></i>CNAME Record (Recommended - Add at Your Registrar)</h6>
+            </div>
+            
+            <div class="alert alert-info mb-3" role="alert">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <strong>Your Provider Subdomain:</strong> 
+                <code class="bg-light px-2">{{ provider.unique_booking_url }}.nextslot.in</code>
+                <br>
+                <small>This connects your custom domain to our DigitalOcean app</small>
             </div>
             
             <div class="table-responsive mb-3">
@@ -335,45 +360,51 @@
                             </td>
                         </tr>
                         <tr>
-                            <td style="padding: 0.75rem; border: 1px solid #e0e0e0;"><strong>Name / Host</strong></td>
+                            <td style="padding: 0.75rem; border: 1px solid #e0e0e0;"><strong>Name / Host / Domain</strong></td>
                             <td style="padding: 0.75rem; border: 1px solid #e0e0e0;">
-                                <code class="bg-light p-2 rounded">@</code>
-                                <button class="copy-btn ms-2" onclick="copyToClipboard('@', this)">
+                                <code class="bg-light p-2 rounded fs-5">{{ provider.custom_domain }}</code>
+                                <button class="copy-btn ms-2" onclick="copyToClipboard('{{ provider.custom_domain }}', this)">
                                     <i class="bi bi-clipboard me-1"></i> Copy
                                 </button>
-                                <br><small class="text-muted">Or use <code>www</code> for www.{{ provider.custom_domain }}</small>
+                                <br><small class="text-muted">Leave as root (@) or use www, depending on registrar</small>
                             </td>
                         </tr>
                         <tr>
-                            <td style="padding: 0.75rem; border: 1px solid #e0e0e0;"><strong>Value / Points To</strong></td>
+                            <td style="padding: 0.75rem; border: 1px solid #e0e0e0;"><strong>Value / Points To / Target</strong></td>
                             <td style="padding: 0.75rem; border: 1px solid #e0e0e0;">
-                                <code class="bg-success text-white p-2 rounded fs-5" id="cname-target">{{ cname_target }}</code>
-                                <button class="copy-btn ms-2" onclick="copyToClipboard('{{ cname_target }}', this)">
+                                <code class="bg-success text-white p-2 rounded fs-5" id="cname-target">{{ provider.unique_booking_url }}.nextslot.in</code>
+                                <button class="copy-btn ms-2" onclick="copyToClipboard('{{ provider.unique_booking_url }}.nextslot.in', this)">
                                     <i class="bi bi-clipboard me-1"></i> Copy
                                 </button>
+                                <br><small class="text-muted">Include the trailing dot if your registrar requires it</small>
                             </td>
                         </tr>
                         <tr>
-                            <td style="padding: 0.75rem; border: 1px solid #e0e0e0;"><strong>TTL</strong></td>
+                            <td style="padding: 0.75rem; border: 1px solid #e0e0e0;"><strong>TTL (Time To Live)</strong></td>
                             <td style="padding: 0.75rem; border: 1px solid #e0e0e0;">
                                 <code class="bg-light p-2 rounded">3600</code> 
                                 <button class="copy-btn ms-2" onclick="copyToClipboard('3600', this)">
                                     <i class="bi bi-clipboard me-1"></i> Copy
                                 </button>
-                                <br><small class="text-muted">Or select "Auto" from dropdown</small>
+                                <br><small class="text-muted">Or select "Automatic" / "Auto" from dropdown</small>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <p class="mb-0 text-muted"><small>✓ Use CNAME record with most registrars (GoDaddy, Namecheap, AWS Route53, Google Domains, etc)</small></p>
+            <p class="mb-0 text-muted"><small><i class="bi bi-check-circle me-1"></i>Use CNAME record with all registrars (GoDaddy, Namecheap, AWS Route53, Google Domains, Bluehost, Hostinger, etc)</small></p>
         </div>
         
         <!-- A Record (Alternative) -->
         <div style="background: #f8fafb; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; border-left: 4px solid #f59e0b;">
             <div class="d-flex align-items-center mb-3">
                 <span style="background: #f59e0b; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 1rem;">2</span>
-                <h6 class="mb-0"><i class="bi bi-diagram-2 me-2"></i>A Record (Alternative - If CNAME Not Available)</h6>
+                <h6 class="mb-0"><i class="bi bi-diagram-2 me-2"></i>A Record (Fallback - Only If CNAME Not Available)</h6>
+            </div>
+            
+            <div class="alert alert-warning mb-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Only use if:</strong> Your registrar doesn't support CNAME on root domain (rare). Most modern registrars support CNAME now.
             </div>
             
             <div class="table-responsive mb-3">
@@ -401,6 +432,7 @@
                                 <button class="copy-btn ms-2" onclick="copyToClipboard('203.0.113.42', this)">
                                     <i class="bi bi-clipboard me-1"></i> Copy
                                 </button>
+                                <br><small class="text-muted">DigitalOcean App Platform IP (for reference)</small>
                             </td>
                         </tr>
                         <tr>
@@ -415,7 +447,7 @@
                     </tbody>
                 </table>
             </div>
-            <p class="mb-0 text-muted"><small>⚠️ Only use A record if CNAME record is not available in your registrar</small></p>
+            <p class="mb-0 text-muted"><small><i class="bi bi-info-circle me-1"></i>A Record not recommended as primary method. Use CNAME above for best results.</small></p>
         </div>
         
         <!-- TXT Verification Record -->
