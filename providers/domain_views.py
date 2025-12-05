@@ -21,12 +21,11 @@ from .domain_utils import (
     generate_unique_cname_target,
     generate_unique_txt_record_name
 )
-from .cloudflare_saas import (
-    create_custom_hostname,
-    get_custom_hostname,
-    delete_custom_hostname,
-    verify_custom_hostname,
-    get_cname_target
+from .simple_dns import (
+    get_dns_setup_instructions,
+    generate_ssl_certificate,
+    verify_custom_domain,
+    get_custom_domain_status
 )
 
 @login_required
@@ -45,8 +44,9 @@ def custom_domain_page(request):
     if not is_pro:
         messages.info(request, 'Custom domains are only available for PRO users. Upgrade to PRO to use this feature.')
     
-    # Get the CNAME target for Cloudflare for SaaS (same for all providers)
-    cname_target = get_cname_target()
+    # Get the CNAME target for simple DNS
+    from .simple_dns import APP_DOMAIN
+    cname_target = APP_DOMAIN
     
     # Ensure provider has unique TXT record name and verification code
     txt_record_name = provider.txt_record_name
@@ -66,19 +66,19 @@ def custom_domain_page(request):
         if not provider.txt_record_name or not provider.domain_verification_code:
             provider.save(update_fields=['txt_record_name', 'domain_verification_code'])
     
-    # Check Cloudflare status if domain is configured
-    cloudflare_status = None
+    # Get DNS setup instructions instead of Cloudflare status
+    dns_info = None
     if provider.custom_domain:
-        cloudflare_status = verify_custom_hostname(provider.custom_domain)
+        dns_info = get_dns_setup_instructions(provider, provider.custom_domain)
     
     context = {
         'provider': provider,
-        'default_domain': cname_target,  # CNAME target for Cloudflare for SaaS
+        'default_domain': cname_target,  # CNAME target for DNS
         'is_pro': is_pro,
         'cname_target': cname_target,
         'txt_record_name': txt_record_name or generate_unique_txt_record_name(provider),
         'verification_code': verification_code or provider.domain_verification_code,
-        'cloudflare_status': cloudflare_status,
+        'dns_setup': dns_info,  # Simple DNS instructions instead of Cloudflare
     }
     
     return render(request, 'providers/custom_domain.html', context)
@@ -181,37 +181,26 @@ def add_custom_domain(request):
             provider.save(update_fields=['domain_verified', 'ssl_enabled'])
             messages.success(request, f'🎉 Your subdomain "{domain}" is now active! Visit it now.')
         else:
-            # For full custom domains, create hostname in Cloudflare for SaaS
-            cf_result = create_custom_hostname(domain, provider.pk)
+            # For full custom domains, use simple DNS records
+            dns_setup = get_dns_setup_instructions(provider, domain)
+            ssl_setup = generate_ssl_certificate(domain, provider.pk)
             
-            if cf_result.get('success'):
-                # Store Cloudflare hostname ID for later management
-                provider.cloudflare_hostname_id = cf_result.get('hostname_id', '')
-                ssl_status = cf_result.get('ssl_status', 'pending_validation')
-                provider.save(update_fields=['cloudflare_hostname_id'])
-                
-                # Use Custom Hostnames API - no manual CNAME needed!
-                messages.success(
-                    request, 
-                    f'✅ Domain "{domain}" has been registered with Cloudflare! '
-                    f'Cloudflare is now provisioning your SSL certificate. '
-                    f'This typically takes 5-30 minutes. You\'ll be notified when ready. '
-                    f'No manual DNS configuration needed!'
-                )
-            elif cf_result.get('manual_setup_required'):
-                # Cloudflare not configured, fall back to manual process
-                messages.warning(
-                    request, 
-                    f'Cloudflare integration not configured. '
-                    f'Please contact support to enable automatic domain provisioning.'
-                )
-            else:
-                error = cf_result.get("error", "Unknown error")
-                messages.error(
-                    request, 
-                    f'Domain "{domain}" setup failed: {error}. '
-                    f'Please try again or contact support.'
-                )
+            # Save domain info
+            provider.domain_verification_code = provider.domain_verification_code or f'booking-verify-{generate_verification_code(12)}'
+            provider.save(update_fields=['domain_verification_code'])
+            
+            # Show DNS setup instructions
+            messages.success(
+                request, 
+                f'✅ Domain "{domain}" is ready for setup!\n\n'
+                f'Add this CNAME record to your DNS provider:\n'
+                f'Record Type: CNAME\n'
+                f'Record Name: @\n'
+                f'Record Value: {dns_setup["record_value"]}\n\n'
+                f'DNS Propagation: 5 minutes to 48 hours\n'
+                f'SSL Certificate: Automatic once DNS is verified\n\n'
+                f'Questions? Visit your Custom Domain settings page.'
+            )
         return redirect('providers:custom_domain')
     else:
         messages.error(request, message)
