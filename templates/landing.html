@@ -4,666 +4,429 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NextSlot - Professional Appointment Booking Platform</title>
+    <title>NextSlot - Professional Appointment Booking & Scheduling Platform</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
-            --primary: #0d9488;
-            --primary-dark: #0f766e;
-            --primary-light: #14b8a6;
-            --secondary: #f97316;
-            --accent: #6366f1;
-            --dark: #0f172a;
-            --gray-900: #111827;
-            --gray-600: #4b5563;
-            --gray-500: #6b7280;
-            --gray-400: #9ca3af;
-            --gray-200: #e5e7eb;
-            --gray-100: #f3f4f6;
-            --white: #ffffff;
+            --primary: #0d9488; --primary-dark: #0f766e; --primary-light: #14b8a6;
+            --secondary: #f97316; --accent: #6366f1; --success: #10b981;
+            --dark: #0f172a; --gray-900: #111827; --gray-600: #4b5563;
+            --gray-500: #6b7280; --gray-400: #9ca3af; --gray-200: #e5e7eb;
+            --gray-100: #f3f4f6; --white: #ffffff;
         }
         
-        html {
-            scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; color: var(--dark); line-height: 1.6; overflow-x: hidden; }
         
-        body {
-            font-family: 'Inter', sans-serif;
-            color: var(--dark);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-        
-        /* NAVBAR */
+        /* NAVBAR - PREMIUM DESIGN */
         .navbar-custom {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(20px);
-            padding: 1rem 0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid var(--gray-200);
+            background: linear-gradient(135deg, rgba(255,255,255,0.99) 0%, rgba(248,253,249,0.98) 100%);
+            backdrop-filter: blur(30px);
+            padding: 1.2rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            position: sticky; top: 0; z-index: 1000;
+            border-bottom: 1px solid rgba(13,148,136,0.1);
         }
         
         .navbar-brand {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 800;
+            font-family: 'Poppins'; font-size: 1.6rem; font-weight: 800;
             background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         
         .nav-link-custom {
-            color: var(--gray-600) !important;
-            font-weight: 500;
-            transition: color 0.3s;
+            color: var(--gray-600) !important; font-weight: 500; transition: all 0.3s;
+            position: relative;
         }
-        
-        .nav-link-custom:hover {
-            color: var(--primary) !important;
+        .nav-link-custom:hover { color: var(--primary) !important; }
+        .nav-link-custom::after {
+            content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 2px;
+            background: var(--primary); transition: width 0.3s;
         }
+        .nav-link-custom:hover::after { width: 100%; }
         
         .btn-nav-login {
-            border: 2px solid var(--primary);
-            color: var(--primary) !important;
-            font-weight: 600;
-            transition: all 0.3s;
+            border: 2px solid var(--primary); color: var(--primary) !important;
+            font-weight: 600; padding: 8px 24px; border-radius: 10px; transition: all 0.3s;
         }
-        
         .btn-nav-login:hover {
-            background: var(--primary);
-            color: white !important;
+            background: var(--primary); color: white !important;
+            box-shadow: 0 6px 20px rgba(13,148,136,0.25);
         }
         
         .btn-nav-signup {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: white !important;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
-            transition: all 0.3s;
+            color: white !important; font-weight: 600; padding: 10px 28px; border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(13,148,136,0.3); transition: all 0.3s;
         }
-        
         .btn-nav-signup:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(13, 148, 136, 0.4);
+            transform: translateY(-3px); box-shadow: 0 10px 30px rgba(13,148,136,0.4);
+            color: white !important;
         }
         
-        /* DROPDOWN MENU */
         .dropdown-menu {
-            border: none;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-            border-radius: 12px;
-            padding: 10px 0;
+            border: none; box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            border-radius: 15px; padding: 12px 0; background: rgba(255,255,255,0.98);
+            backdrop-filter: blur(10px);
         }
-        
         .dropdown-item {
-            padding: 12px 20px;
-            transition: all 0.3s;
-            color: var(--gray-600);
+            padding: 14px 24px; transition: all 0.3s; color: var(--gray-700);
             font-weight: 500;
         }
-        
         .dropdown-item:hover {
-            background: rgba(13, 148, 136, 0.1);
-            color: var(--primary);
+            background: rgba(13,148,136,0.08); color: var(--primary);
         }
+        .dropdown-item i { margin-right: 10px; }
         
-        .dropdown-item i {
-            margin-right: 10px;
-        }
-        
-        /* HERO */
+        /* HERO SECTION - PREMIUM */
         .hero-section {
-            padding: 120px 20px 80px;
-            background: linear-gradient(135deg, rgba(13, 148, 136, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%);
-            position: relative;
-            overflow: hidden;
-            min-height: 90vh;
-            display: flex;
-            align-items: center;
+            padding: 100px 20px 60px; background: linear-gradient(135deg, rgba(13,148,136,0.03) 0%, rgba(99,102,241,0.02) 100%);
+            position: relative; overflow: hidden; min-height: 85vh;
+            display: flex; align-items: center;
         }
         
         .hero-section::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -10%;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(13, 148, 136, 0.1) 0%, transparent 70%);
+            content: ''; position: absolute; top: -40%; right: -15%;
+            width: 700px; height: 700px;
+            background: radial-gradient(circle, rgba(13,148,136,0.12) 0%, transparent 70%);
             border-radius: 50%;
         }
         
-        .hero-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 3.5rem;
-            font-weight: 800;
-            line-height: 1.1;
-            margin-bottom: 20px;
-            color: var(--dark);
+        .hero-section::after {
+            content: ''; position: absolute; bottom: -20%; left: -10%;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%);
+            border-radius: 50%;
         }
         
+        .hero-content { position: relative; z-index: 1; }
+        
+        .hero-title {
+            font-family: 'Poppins'; font-size: 3.8rem; font-weight: 800;
+            line-height: 1.1; margin-bottom: 24px; color: var(--dark);
+            letter-spacing: -0.02em;
+        }
         .hero-title .grad {
             background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         
         .hero-subtitle {
-            font-size: 1.2rem;
-            color: var(--gray-600);
-            margin-bottom: 40px;
-            max-width: 580px;
-            line-height: 1.8;
+            font-size: 1.25rem; color: var(--gray-600); margin-bottom: 50px;
+            max-width: 600px; line-height: 1.8; font-weight: 400;
         }
         
-        .hero-btn-group {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
+        .hero-cta-group {
+            display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 40px;
         }
         
-        .btn-primary-custom {
+        .btn-primary-hero {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white; border: none; padding: 16px 42px; font-size: 1.05rem;
+            font-weight: 600; border-radius: 12px; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 10px; transition: all 0.3s;
+            box-shadow: 0 8px 25px rgba(13,148,136,0.3);
+        }
+        .btn-primary-hero:hover {
+            transform: translateY(-4px); box-shadow: 0 12px 35px rgba(13,148,136,0.4);
             color: white;
-            border: none;
-            padding: 14px 40px;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 10px;
-            transition: all 0.3s;
-            box-shadow: 0 6px 20px rgba(13, 148, 136, 0.3);
         }
         
-        .btn-primary-custom:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 28px rgba(13, 148, 136, 0.4);
-            color: white !important;
-            text-decoration: none;
+        .btn-secondary-hero {
+            background: white; color: var(--primary); border: 2px solid var(--primary);
+            padding: 14px 42px; font-size: 1.05rem; font-weight: 600;
+            border-radius: 12px; text-decoration: none; display: inline-flex;
+            align-items: center; gap: 10px; transition: all 0.3s;
         }
-        
-        .btn-secondary-custom {
-            background: white;
+        .btn-secondary-hero:hover {
+            background: var(--gray-50); transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
             color: var(--primary);
-            border: 2px solid var(--primary);
-            padding: 12px 40px;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 10px;
-            transition: all 0.3s;
         }
         
-        .btn-secondary-custom:hover {
-            background: var(--gray-100);
-            transform: translateY(-3px);
-            color: var(--primary) !important;
-            text-decoration: none;
-        }
-        
-        .hero-image {
+        /* AUTH CARDS SECTION - PROMINENT */
+        .auth-section {
+            padding: 120px 20px; background: linear-gradient(180deg, white 0%, #f8fdf9 100%);
             position: relative;
-            z-index: 1;
-            min-height: 500px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
         
-        .hero-visual {
-            background: linear-gradient(135deg, rgba(13, 148, 136, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
-            border-radius: 20px;
-            height: 500px;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 5rem;
-            color: rgba(13, 148, 136, 0.2);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+        .auth-section-header {
+            text-align: center; margin-bottom: 100px;
         }
         
-        /* AUTH CARDS SECTION */
-        .auth-cards-section {
-            padding: 120px 20px;
-            background: linear-gradient(180deg, #f8fdf9 0%, white 100%);
+        .auth-section-badge {
+            display: inline-block; background: rgba(13,148,136,0.1);
+            border: 1px solid rgba(13,148,136,0.3); color: var(--primary);
+            padding: 10px 20px; border-radius: 25px; font-size: 0.9rem;
+            font-weight: 600; margin-bottom: 20px;
         }
         
-        .auth-header {
-            text-align: center;
-            margin-bottom: 80px;
+        .auth-section h2 {
+            font-family: 'Poppins'; font-size: 3rem; font-weight: 800;
+            color: var(--dark); margin-bottom: 15px; letter-spacing: -0.02em;
         }
         
-        .auth-header h2 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--dark);
-            margin-bottom: 15px;
+        .auth-section p {
+            font-size: 1.2rem; color: var(--gray-600); max-width: 700px;
+            margin: 0 auto; line-height: 1.8;
         }
         
-        .auth-header p {
-            font-size: 1.1rem;
-            color: var(--gray-600);
+        .auth-cards-container {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px; margin-bottom: 60px;
         }
         
         .auth-card {
-            background: white;
-            border-radius: 20px;
-            padding: 50px 35px;
-            transition: all 0.4s ease;
-            border: 2px solid var(--gray-200);
-            position: relative;
-            overflow: hidden;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
+            background: white; border-radius: 20px; padding: 50px 40px;
+            transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+            border: 2px solid var(--gray-200); position: relative;
+            overflow: hidden; display: flex; flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
         
         .auth-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.4s ease;
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 6px; background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            transform: scaleX(0); transform-origin: left; transition: transform 0.4s;
         }
         
         .auth-card:hover {
-            border-color: var(--primary);
-            box-shadow: 0 20px 50px rgba(13, 148, 136, 0.15);
-            transform: translateY(-10px);
+            border-color: var(--primary); box-shadow: 0 25px 60px rgba(13,148,136,0.15);
+            transform: translateY(-12px);
+        }
+        .auth-card:hover::before { transform: scaleX(1); }
+        
+        .auth-icon-box {
+            width: 90px; height: 90px; border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; margin-bottom: 30px; transition: all 0.3s;
         }
         
-        .auth-card:hover::before {
-            transform: scaleX(1);
-        }
-        
-        .auth-card-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            margin-bottom: 25px;
-            transition: all 0.3s ease;
-        }
-        
-        .provider-icon {
-            background: linear-gradient(135deg, rgba(13, 148, 136, 0.2) 0%, rgba(13, 148, 136, 0.05) 100%);
+        .provider-icon-box {
+            background: linear-gradient(135deg, rgba(13,148,136,0.15) 0%, rgba(13,148,136,0.05) 100%);
             color: var(--primary);
         }
-        
-        .client-icon {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(99, 102, 241, 0.05) 100%);
+        .client-icon-box {
+            background: linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(99,102,241,0.05) 100%);
             color: var(--accent);
         }
         
-        .auth-card:hover .auth-card-icon {
-            transform: scale(1.1);
-        }
+        .auth-card:hover .auth-icon-box { transform: scale(1.15); }
         
         .auth-card-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 15px;
+            font-family: 'Poppins'; font-size: 1.7rem; font-weight: 700;
+            color: var(--dark); margin-bottom: 15px;
         }
         
-        .auth-card-desc {
-            color: var(--gray-600);
-            margin-bottom: 25px;
-            line-height: 1.6;
-            font-size: 0.95rem;
-        }
-        
-        .auth-card-features {
-            list-style: none;
-            margin-bottom: 30px;
-            flex-grow: 1;
-        }
-        
-        .auth-card-features li {
-            padding: 12px 0;
-            color: var(--gray-700);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.95rem;
-        }
-        
-        .auth-card-features i {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            font-weight: bold;
-        }
-        
-        .provider-card .auth-card-features i {
-            background: rgba(13, 148, 136, 0.2);
-            color: var(--primary);
-        }
-        
-        .client-card .auth-card-features i {
-            background: rgba(99, 102, 241, 0.2);
-            color: var(--accent);
-        }
-        
-        .auth-card-btn {
-            padding: 14px 30px;
-            font-weight: 600;
-            border-radius: 12px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-            margin-bottom: 20px;
-        }
-        
-        .provider-btn {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: white;
-            box-shadow: 0 6px 20px rgba(13, 148, 136, 0.3);
-        }
-        
-        .provider-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 28px rgba(13, 148, 136, 0.4);
-            color: white;
-        }
-        
-        .client-btn {
-            background: linear-gradient(135deg, var(--accent) 0%, #818cf8 100%);
-            color: white;
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
-        }
-        
-        .client-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 28px rgba(99, 102, 241, 0.4);
-            color: white;
-        }
-        
-        .auth-card-footer {
-            text-align: center;
-            color: var(--gray-500);
-            font-size: 0.9rem;
-            margin: 0;
-        }
-        
-        .login-link {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        .login-link:hover {
-            color: var(--primary-dark);
-            text-decoration: underline;
-        }
-        
-        /* FEATURES */
-        .features-section {
-            padding: 100px 20px;
-            background: white;
-        }
-        
-        .section-header {
-            text-align: center;
-            margin-bottom: 80px;
-        }
-        
-        .section-badge {
-            display: inline-block;
-            background: rgba(13, 148, 136, 0.1);
-            border: 1px solid rgba(13, 148, 136, 0.3);
-            color: var(--primary);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-        
-        .section-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 20px;
-            color: var(--dark);
-        }
-        
-        .section-subtitle {
-            font-size: 1.1rem;
-            color: var(--gray-600);
-            max-width: 700px;
-            margin: 0 auto;
-            line-height: 1.8;
-        }
-        
-        .feature-card {
-            background: white;
-            border: 1px solid var(--gray-200);
-            border-radius: 15px;
-            padding: 40px 30px;
-            transition: all 0.3s ease;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-        }
-        
-        .feature-card:hover {
-            border-color: var(--primary);
-            box-shadow: 0 10px 30px rgba(13, 148, 136, 0.1);
-            transform: translateY(-5px);
-        }
-        
-        .feature-card:hover::before {
-            transform: translateX(0);
-        }
-        
-        .feature-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-        }
-        
-        .feature-icon.teal {
-            background: rgba(13, 148, 136, 0.1);
-            color: var(--primary);
-        }
-        
-        .feature-icon.indigo {
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--accent);
-        }
-        
-        .feature-icon.amber {
-            background: rgba(245, 158, 11, 0.1);
-            color: var(--secondary);
-        }
-        
-        .feature-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: var(--dark);
-        }
-        
-        .feature-text {
-            color: var(--gray-600);
+        .auth-card-description {
+            color: var(--gray-600); font-size: 1rem; margin-bottom: 30px;
             line-height: 1.7;
         }
         
-        /* CTA */
-        .cta-section {
-            padding: 80px 20px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        .auth-features-list {
+            list-style: none; margin-bottom: 35px; flex-grow: 1;
+        }
+        
+        .auth-features-list li {
+            padding: 12px 0; color: var(--gray-700); display: flex;
+            align-items: center; gap: 12px; font-size: 0.95rem;
+        }
+        
+        .auth-features-list i {
+            width: 24px; height: 24px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; font-weight: bold;
+        }
+        
+        .provider-card .auth-features-list i {
+            background: rgba(13,148,136,0.2); color: var(--primary);
+        }
+        .client-card .auth-features-list i {
+            background: rgba(99,102,241,0.2); color: var(--accent);
+        }
+        
+        .auth-cta-button {
+            padding: 16px 30px; font-weight: 600; border-radius: 12px;
+            text-decoration: none; display: flex; align-items: center;
+            justify-content: center; gap: 10px; transition: all 0.3s;
+            font-size: 1.05rem; margin-bottom: 20px;
+        }
+        
+        .provider-button {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white; box-shadow: 0 8px 25px rgba(13,148,136,0.3);
+        }
+        .provider-button:hover {
+            transform: translateY(-3px); box-shadow: 0 12px 35px rgba(13,148,136,0.4);
             color: white;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
+        }
+        
+        .client-button {
+            background: linear-gradient(135deg, var(--accent) 0%, #818cf8 100%);
+            color: white; box-shadow: 0 8px 25px rgba(99,102,241,0.3);
+        }
+        .client-button:hover {
+            transform: translateY(-3px); box-shadow: 0 12px 35px rgba(99,102,241,0.4);
+            color: white;
+        }
+        
+        .auth-footer-text {
+            text-align: center; color: var(--gray-500); font-size: 0.9rem; margin: 0;
+        }
+        
+        .auth-login-link {
+            color: var(--primary); text-decoration: none; font-weight: 600;
+            transition: all 0.3s;
+        }
+        .auth-login-link:hover {
+            color: var(--primary-dark); text-decoration: underline;
+        }
+        
+        /* FEATURES SECTION */
+        .features-section {
+            padding: 100px 20px; background: white;
+        }
+        
+        .section-header {
+            text-align: center; margin-bottom: 80px;
+        }
+        
+        .section-badge {
+            display: inline-block; background: rgba(13,148,136,0.1);
+            border: 1px solid rgba(13,148,136,0.3); color: var(--primary);
+            padding: 10px 20px; border-radius: 25px; font-size: 0.9rem;
+            font-weight: 600; margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-family: 'Poppins'; font-size: 2.5rem; font-weight: 800;
+            color: var(--dark); margin-bottom: 20px;
+        }
+        
+        .section-subtitle {
+            font-size: 1.1rem; color: var(--gray-600); max-width: 700px;
+            margin: 0 auto; line-height: 1.8;
+        }
+        
+        .feature-card {
+            background: white; border: 1px solid var(--gray-200);
+            border-radius: 15px; padding: 40px 30px; transition: all 0.3s ease;
+            height: 100%; position: relative; overflow: hidden;
+        }
+        
+        .feature-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 4px; background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            transform: translateX(-100%); transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            border-color: var(--primary); box-shadow: 0 10px 30px rgba(13,148,136,0.1);
+            transform: translateY(-5px);
+        }
+        .feature-card:hover::before { transform: translateX(0); }
+        
+        .feature-icon {
+            width: 60px; height: 60px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; margin-bottom: 20px;
+        }
+        
+        .feature-icon.teal {
+            background: rgba(13,148,136,0.1); color: var(--primary);
+        }
+        .feature-icon.indigo {
+            background: rgba(99,102,241,0.1); color: var(--accent);
+        }
+        .feature-icon.amber {
+            background: rgba(245,158,11,0.1); color: var(--secondary);
+        }
+        .feature-icon.green {
+            background: rgba(16,185,129,0.1); color: var(--success);
+        }
+        
+        .feature-title {
+            font-family: 'Poppins'; font-size: 1.3rem; font-weight: 700;
+            color: var(--dark); margin-bottom: 12px;
+        }
+        
+        .feature-text {
+            color: var(--gray-600); line-height: 1.7;
+        }
+        
+        /* CTA SECTION */
+        .cta-section {
+            padding: 100px 20px; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white; text-align: center; position: relative; overflow: hidden;
         }
         
         .cta-section::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -10%;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            content: ''; position: absolute; top: -50%; right: -10%;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
             border-radius: 50%;
         }
         
-        .cta-content {
-            position: relative;
-            z-index: 1;
-        }
+        .cta-content { position: relative; z-index: 1; }
         
         .cta-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 2.8rem;
-            font-weight: 800;
+            font-family: 'Poppins'; font-size: 2.8rem; font-weight: 800;
             margin-bottom: 20px;
         }
         
         .cta-subtitle {
-            font-size: 1.2rem;
-            margin-bottom: 40px;
-            opacity: 0.95;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            font-size: 1.2rem; margin-bottom: 40px; opacity: 0.95;
+            max-width: 600px; margin-left: auto; margin-right: auto;
         }
         
         /* FOOTER */
         .footer {
-            background: var(--dark);
-            color: var(--gray-400);
-            padding: 60px 20px 30px;
+            background: var(--dark); color: var(--gray-400); padding: 60px 20px 30px;
         }
         
         .footer-brand {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 15px;
+            font-family: 'Poppins'; font-size: 1.3rem; font-weight: 800;
+            color: white; margin-bottom: 15px;
         }
         
         .footer-text {
-            color: var(--gray-500);
-            line-height: 1.8;
-            margin-bottom: 20px;
-            max-width: 300px;
+            color: var(--gray-500); line-height: 1.8; margin-bottom: 20px; max-width: 300px;
         }
         
         .footer-title {
-            color: white;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 700;
-            margin-bottom: 20px;
-            font-size: 1rem;
+            color: white; font-family: 'Poppins'; font-weight: 700;
+            margin-bottom: 20px; font-size: 1rem;
         }
         
         .footer-link {
-            display: block;
-            color: var(--gray-400);
-            text-decoration: none;
-            margin-bottom: 12px;
-            transition: all 0.3s ease;
+            display: block; color: var(--gray-400); text-decoration: none;
+            margin-bottom: 12px; transition: all 0.3s ease;
         }
-        
         .footer-link:hover {
-            color: var(--primary);
-            padding-left: 5px;
+            color: var(--primary); padding-left: 5px;
         }
         
         .footer-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 30px;
-            text-align: center;
-            color: var(--gray-500);
-            margin-top: 50px;
+            border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px;
+            text-align: center; color: var(--gray-500); margin-top: 50px;
         }
         
         /* RESPONSIVE */
         @media (max-width: 768px) {
-            .hero-title {
-                font-size: 2.2rem;
-            }
-            
-            .hero-subtitle {
-                font-size: 1rem;
-            }
-            
-            .hero-btn-group {
-                flex-direction: column;
-            }
-            
-            .btn-primary-custom,
-            .btn-secondary-custom {
-                width: 100%;
-            }
-            
-            .section-title {
-                font-size: 2rem;
-            }
-            
-            .cta-title {
-                font-size: 2rem;
-            }
-            
-            .hero-visual {
-                height: 300px;
-                font-size: 3rem;
-            }
+            .hero-title { font-size: 2.2rem; }
+            .hero-subtitle { font-size: 1rem; }
+            .hero-cta-group { flex-direction: column; }
+            .btn-primary-hero, .btn-secondary-hero { width: 100%; }
+            .auth-section h2 { font-size: 2rem; }
+            .cta-title { font-size: 2rem; }
+            .auth-card { padding: 40px 30px; }
         }
     </style>
 </head>
@@ -686,10 +449,10 @@
                         <a class="nav-link nav-link-custom" href="{% url 'subscriptions:pricing' %}">Pricing</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link nav-link-custom dropdown-toggle" href="#" id="signupDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link nav-link-custom dropdown-toggle" href="#" id="signupNav" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-person-plus"></i> Sign Up
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="signupDropdown">
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="signupNav">
                             <li><a class="dropdown-item" href="{% url 'accounts:register_provider' %}"><i class="bi bi-shop"></i> Service Provider</a></li>
                             <li><a class="dropdown-item" href="{% url 'accounts:register_client' %}"><i class="bi bi-person"></i> Client</a></li>
                         </ul>
@@ -698,14 +461,14 @@
                         <a class="btn btn-nav-login" href="{% url 'accounts:login' %}"><i class="bi bi-box-arrow-in-right"></i> Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="btn btn-nav-signup" href="{% url 'accounts:register_provider' %}"><i class="bi bi-star-fill"></i> Get Started</a>
+                        <a class="btn btn-nav-signup" href="{% url 'accounts:register_provider' %}"><i class="bi bi-rocket-fill"></i> Start Free</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- HERO -->
+    <!-- HERO SECTION -->
     <section class="hero-section">
         <div class="container">
             <div class="row align-items-center">
@@ -716,86 +479,98 @@
                     <p class="hero-subtitle">
                         Create your professional booking page in minutes. Accept appointments 24/7, reduce no-shows, and delight your customers with NextSlot.
                     </p>
-                    <div class="hero-btn-group">
-                        <a href="{% url 'accounts:register_provider' %}" class="btn-primary-custom">
-                            <i class="bi bi-shop"></i> Get Started Free
+                    <div class="hero-cta-group">
+                        <a href="{% url 'accounts:register_provider' %}" class="btn-primary-hero">
+                            <i class="bi bi-shop"></i> Sign Up as Provider
                         </a>
-                        <a href="{% url 'accounts:register_client' %}" class="btn-secondary-custom">
-                            <i class="bi bi-play-circle"></i> View Demo
+                        <a href="{% url 'accounts:register_client' %}" class="btn-secondary-hero">
+                            <i class="bi bi-play-circle"></i> Sign Up as Client
                         </a>
                     </div>
+                    <p style="color: var(--gray-500); font-size: 0.95rem;">
+                        Already have an account? <a href="{% url 'accounts:login' %}" style="color: var(--primary); font-weight: 600; text-decoration: none;">Login here</a>
+                    </p>
                 </div>
                 <div class="col-lg-6">
-                    <div class="hero-image">
-                        <div class="hero-visual">
-                            <i class="bi bi-calendar2-event"></i>
-                        </div>
+                    <div style="background: linear-gradient(135deg, rgba(13,148,136,0.1) 0%, rgba(99,102,241,0.1) 100%); border-radius: 20px; height: 500px; display: flex; align-items: center; justify-content: center; font-size: 5rem; color: rgba(13,148,136,0.2);">
+                        <i class="bi bi-calendar2-event"></i>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- AUTH CARDS SECTION -->
-    <section class="auth-cards-section">
+    <!-- AUTH CARDS SECTION - PROMINENT -->
+    <section class="auth-section">
         <div class="container">
-            <div class="auth-header">
-                <h2>Start Your Journey Now</h2>
-                <p>Choose your role and get started with NextSlot</p>
+            <div class="auth-section-header">
+                <div class="auth-section-badge">
+                    <i class="bi bi-lightning-charge-fill"></i> Choose Your Role
+                </div>
+                <h2>Join NextSlot Today</h2>
+                <p>Whether you're a service provider or looking to book appointments, NextSlot is the perfect solution for you.</p>
             </div>
 
-            <div class="row g-4 justify-content-center">
-                <!-- Service Provider Card -->
-                <div class="col-md-5 col-lg-4">
-                    <div class="auth-card provider-card">
-                        <div class="auth-card-icon provider-icon">
-                            <i class="bi bi-shop"></i>
-                        </div>
-                        <h3 class="auth-card-title">For Service Providers</h3>
-                        <p class="auth-card-desc">Manage appointments effortlessly, grow your business, and delight customers.</p>
-                        <ul class="auth-card-features">
-                            <li><i class="bi bi-check-lg"></i> 24/7 Online Booking</li>
-                            <li><i class="bi bi-check-lg"></i> Smart Reminders</li>
-                            <li><i class="bi bi-check-lg"></i> Team Management</li>
-                            <li><i class="bi bi-check-lg"></i> Analytics Dashboard</li>
-                        </ul>
-                        <a href="{% url 'accounts:register_provider' %}" class="auth-card-btn provider-btn">
-                            Sign Up as Provider <i class="bi bi-arrow-right"></i>
-                        </a>
-                        <p class="auth-card-footer">Already have an account? <a href="{% url 'accounts:login' %}" class="login-link">Login</a></p>
+            <div class="auth-cards-container">
+                <!-- SERVICE PROVIDER CARD -->
+                <div class="auth-card provider-card">
+                    <div class="auth-icon-box provider-icon-box">
+                        <i class="bi bi-shop"></i>
                     </div>
+                    <h3 class="auth-card-title">For Service Providers</h3>
+                    <p class="auth-card-description">
+                        Manage your appointments, grow your business, and serve customers better with our all-in-one platform.
+                    </p>
+                    <ul class="auth-features-list">
+                        <li><i class="bi bi-check-lg"></i> 24/7 Online Booking Page</li>
+                        <li><i class="bi bi-check-lg"></i> Automated Reminders (SMS/Email)</li>
+                        <li><i class="bi bi-check-lg"></i> Team Member Management</li>
+                        <li><i class="bi bi-check-lg"></i> Business Analytics</li>
+                        <li><i class="bi bi-check-lg"></i> Payment Integration (Razorpay)</li>
+                        <li><i class="bi bi-check-lg"></i> Custom Domain Support</li>
+                    </ul>
+                    <a href="{% url 'accounts:register_provider' %}" class="auth-cta-button provider-button">
+                        <i class="bi bi-rocket-fill"></i> Get Started Free
+                    </a>
+                    <p class="auth-footer-text">
+                        Already registered? <a href="{% url 'accounts:login' %}" class="auth-login-link">Login to your account</a>
+                    </p>
                 </div>
 
-                <!-- Client Card -->
-                <div class="col-md-5 col-lg-4">
-                    <div class="auth-card client-card">
-                        <div class="auth-card-icon client-icon">
-                            <i class="bi bi-person-circle"></i>
-                        </div>
-                        <h3 class="auth-card-title">For Clients</h3>
-                        <p class="auth-card-desc">Book appointments from your favorite service providers with ease.</p>
-                        <ul class="auth-card-features">
-                            <li><i class="bi bi-check-lg"></i> Browse Services</li>
-                            <li><i class="bi bi-check-lg"></i> Easy Booking</li>
-                            <li><i class="bi bi-check-lg"></i> Payment Options</li>
-                            <li><i class="bi bi-check-lg"></i> Appointment Reminders</li>
-                        </ul>
-                        <a href="{% url 'accounts:register_client' %}" class="auth-card-btn client-btn">
-                            Sign Up as Client <i class="bi bi-arrow-right"></i>
-                        </a>
-                        <p class="auth-card-footer">Already have an account? <a href="{% url 'accounts:login' %}" class="login-link">Login</a></p>
+                <!-- CLIENT CARD -->
+                <div class="auth-card client-card">
+                    <div class="auth-icon-box client-icon-box">
+                        <i class="bi bi-person-circle"></i>
                     </div>
+                    <h3 class="auth-card-title">For Clients</h3>
+                    <p class="auth-card-description">
+                        Browse available services, book appointments easily, and manage all your bookings in one place.
+                    </p>
+                    <ul class="auth-features-list">
+                        <li><i class="bi bi-check-lg"></i> Browse All Services</li>
+                        <li><i class="bi bi-check-lg"></i> Easy Online Booking</li>
+                        <li><i class="bi bi-check-lg"></i> Multiple Payment Options</li>
+                        <li><i class="bi bi-check-lg"></i> Appointment Reminders</li>
+                        <li><i class="bi bi-check-lg"></i> Booking History</li>
+                        <li><i class="bi bi-check-lg"></i> Service Reviews</li>
+                    </ul>
+                    <a href="{% url 'accounts:register_client' %}" class="auth-cta-button client-button">
+                        <i class="bi bi-star-fill"></i> Browse Services
+                    </a>
+                    <p class="auth-footer-text">
+                        Already registered? <a href="{% url 'accounts:login' %}" class="auth-login-link">Login to your account</a>
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- FEATURES -->
-    <section class="features-section" id="features">
+    <!-- FEATURES SECTION -->
+    <section id="features" class="features-section">
         <div class="container">
             <div class="section-header">
                 <div class="section-badge">
-                    <i class="bi bi-stars"></i> Why NextSlot
+                    <i class="bi bi-stars"></i> Why Choose NextSlot
                 </div>
                 <h2 class="section-title">Everything You Need to Succeed</h2>
                 <p class="section-subtitle">
@@ -806,95 +581,44 @@
             <div class="row g-4">
                 <div class="col-md-6 col-lg-3">
                     <div class="feature-card">
-                        <div class="feature-icon teal">
-                            <i class="bi bi-calendar-check"></i>
-                        </div>
+                        <div class="feature-icon teal"><i class="bi bi-calendar-check"></i></div>
                         <h3 class="feature-title">Online Booking</h3>
                         <p class="feature-text">Allow customers to book appointments 24/7 from your personalized booking page.</p>
                     </div>
                 </div>
-
                 <div class="col-md-6 col-lg-3">
                     <div class="feature-card">
-                        <div class="feature-icon indigo">
-                            <i class="bi bi-bell"></i>
-                        </div>
+                        <div class="feature-icon indigo"><i class="bi bi-bell"></i></div>
                         <h3 class="feature-title">Smart Reminders</h3>
                         <p class="feature-text">Automatic SMS and email reminders reduce no-shows and improve attendance rates.</p>
                     </div>
                 </div>
-
                 <div class="col-md-6 col-lg-3">
                     <div class="feature-card">
-                        <div class="feature-icon amber">
-                            <i class="bi bi-people"></i>
-                        </div>
+                        <div class="feature-icon amber"><i class="bi bi-people"></i></div>
                         <h3 class="feature-title">Team Management</h3>
                         <p class="feature-text">Add staff members with individual schedules and service-specific assignments.</p>
                     </div>
                 </div>
-
                 <div class="col-md-6 col-lg-3">
                     <div class="feature-card">
-                        <div class="feature-icon teal">
-                            <i class="bi bi-graph-up"></i>
-                        </div>
-                        <h3 class="feature-title">Analytics & Reports</h3>
+                        <div class="feature-icon green"><i class="bi bi-graph-up"></i></div>
+                        <h3 class="feature-title">Analytics</h3>
                         <p class="feature-text">Track bookings, revenue, and customer insights with detailed analytics dashboard.</p>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-3">
-                    <div class="feature-card">
-                        <div class="feature-icon indigo">
-                            <i class="bi bi-credit-card"></i>
-                        </div>
-                        <h3 class="feature-title">Multiple Payments</h3>
-                        <p class="feature-text">Accept payments via Razorpay, credit cards, and multiple payment methods easily.</p>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-3">
-                    <div class="feature-card">
-                        <div class="feature-icon amber">
-                            <i class="bi bi-chat-dots"></i>
-                        </div>
-                        <h3 class="feature-title">WhatsApp Integration</h3>
-                        <p class="feature-text">Send appointment updates and reminders directly through WhatsApp to customers.</p>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-3">
-                    <div class="feature-card">
-                        <div class="feature-icon teal">
-                            <i class="bi bi-shield-check"></i>
-                        </div>
-                        <h3 class="feature-title">Secure & Reliable</h3>
-                        <p class="feature-text">Enterprise-grade security with automatic backups and 99.9% uptime guarantee.</p>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-3">
-                    <div class="feature-card">
-                        <div class="feature-icon indigo">
-                            <i class="bi bi-globe"></i>
-                        </div>
-                        <h3 class="feature-title">Custom Domain</h3>
-                        <p class="feature-text">Use your own custom domain with automatic SSL certificates and professional branding.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- CTA -->
+    <!-- CTA SECTION -->
     <section class="cta-section">
         <div class="container">
             <div class="cta-content">
-                <h2 class="cta-title">Ready to Grow Your Business?</h2>
-                <p class="cta-subtitle">Join thousands of service providers using NextSlot to manage their appointments efficiently.</p>
-                <a href="{% url 'accounts:register_provider' %}" class="btn-primary-custom" style="background: white; color: var(--primary); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); margin-top: 10px;">
-                    <i class="bi bi-arrow-right"></i> Start Your Free Trial Today
+                <h2 class="cta-title">Ready to Transform Your Business?</h2>
+                <p class="cta-subtitle">Join thousands of service providers who trust NextSlot to manage their appointments.</p>
+                <a href="{% url 'accounts:register_provider' %}" class="btn-primary-hero" style="background: white; color: var(--primary); box-shadow: 0 8px 25px rgba(0,0,0,0.2); margin-top: 10px;">
+                    <i class="bi bi-arrow-right"></i> Start Your Free Trial
                 </a>
             </div>
         </div>
@@ -910,35 +634,27 @@
                     </div>
                     <p class="footer-text">The modern appointment booking platform for service businesses. Simple, powerful, and reliable.</p>
                 </div>
-
                 <div class="col-lg-2 col-md-4 mb-4">
                     <h5 class="footer-title">Product</h5>
                     <a href="#features" class="footer-link">Features</a>
                     <a href="{% url 'subscriptions:pricing' %}" class="footer-link">Pricing</a>
-                    <a href="#" class="footer-link">Security</a>
                 </div>
-
                 <div class="col-lg-2 col-md-4 mb-4">
-                    <h5 class="footer-title">Company</h5>
-                    <a href="#" class="footer-link">About Us</a>
-                    <a href="#" class="footer-link">Blog</a>
-                    <a href="#" class="footer-link">Contact</a>
-                </div>
-
-                <div class="col-lg-2 col-md-4 mb-4">
-                    <h5 class="footer-title">Account</h5>
-                    <a href="{% url 'accounts:login' %}" class="footer-link">Login</a>
+                    <h5 class="footer-title">Sign Up</h5>
                     <a href="{% url 'accounts:register_provider' %}" class="footer-link">Provider Sign Up</a>
                     <a href="{% url 'accounts:register_client' %}" class="footer-link">Client Sign Up</a>
                 </div>
-
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h5 class="footer-title">Account</h5>
+                    <a href="{% url 'accounts:login' %}" class="footer-link">Login</a>
+                    <a href="#" class="footer-link">Support</a>
+                </div>
                 <div class="col-lg-2 col-md-4 mb-4">
                     <h5 class="footer-title">Legal</h5>
                     <a href="#" class="footer-link">Privacy Policy</a>
                     <a href="#" class="footer-link">Terms of Service</a>
                 </div>
             </div>
-
             <div class="footer-bottom">
                 <p>&copy; 2025 NextSlot. All rights reserved.</p>
             </div>
