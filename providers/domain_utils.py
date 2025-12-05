@@ -324,17 +324,3 @@ def verify_domain_ownership(provider):
             f'Please ensure CNAME record is added. '
             f'SSL certificate will be generated on DigitalOcean.'
         )
-    
-    if ssl_status == 'pending_validation':
-        messages.append('Waiting for SSL certificate validation.')
-        # Check if SSL TXT record is needed
-        ssl_records = cf_status.get('ssl_validation_records', [])
-        if ssl_records:
-            for rec in ssl_records:
-                messages.append(f'Add TXT record: _acme-challenge → {rec.get("txt_value", "")}')
-    elif ssl_status == 'active':
-        messages.append('SSL certificate is active.')
-    else:
-        messages.append(f'SSL status: {ssl_status}')
-    
-    return False, ' '.join(messages)
