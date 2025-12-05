@@ -34,6 +34,7 @@ def custom_domain_page(request):
     """
     Dedicated page for managing custom domain settings.
     Uses Cloudflare for SaaS for automatic SSL provisioning.
+    Each provider gets unique TXT record verification.
     """
     if not hasattr(request.user, 'is_provider') or not request.user.is_provider:
         raise PermissionDenied("You don't have permission to access this page.")
@@ -44,15 +45,26 @@ def custom_domain_page(request):
     if not is_pro:
         messages.info(request, 'Custom domains are only available for PRO users. Upgrade to PRO to use this feature.')
     
-    # Get the CNAME target for Cloudflare for SaaS
+    # Get the CNAME target for Cloudflare for SaaS (same for all providers)
     cname_target = get_cname_target()
     
-    # For TXT record, we still use unique names for additional verification
+    # Ensure provider has unique TXT record name and verification code
     txt_record_name = provider.txt_record_name
-    if not txt_record_name and provider.custom_domain:
-        txt_record_name = generate_unique_txt_record_name(provider)
-        provider.txt_record_name = txt_record_name
-        provider.save(update_fields=['txt_record_name'])
+    verification_code = provider.domain_verification_code
+    
+    if provider.custom_domain:
+        # Generate if missing
+        if not txt_record_name:
+            txt_record_name = generate_unique_txt_record_name(provider)
+            provider.txt_record_name = txt_record_name
+        
+        if not verification_code:
+            verification_code = f'booking-verify-{generate_verification_code(12)}'
+            provider.domain_verification_code = verification_code
+        
+        # Save if any updates were made
+        if not provider.txt_record_name or not provider.domain_verification_code:
+            provider.save(update_fields=['txt_record_name', 'domain_verification_code'])
     
     # Check Cloudflare status if domain is configured
     cloudflare_status = None
@@ -65,6 +77,7 @@ def custom_domain_page(request):
         'is_pro': is_pro,
         'cname_target': cname_target,
         'txt_record_name': txt_record_name or generate_unique_txt_record_name(provider),
+        'verification_code': verification_code or provider.domain_verification_code,
         'cloudflare_status': cloudflare_status,
     }
     

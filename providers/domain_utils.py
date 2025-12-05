@@ -141,16 +141,28 @@ def generate_unique_cname_target(provider):
     All providers point to the same Railway app domain.
     The unique identification is done via the custom domain itself.
     
+    IMPORTANT: Every service provider uses the SAME CNAME target
+    because we have one Railway app domain. The uniqueness comes from:
+    1. Each provider's unique custom domain (e.g., salon1.com, salon2.com)
+    2. Each provider's unique TXT record verification name (_bv-salon-name)
+    3. Middleware routing based on the Host header
+    
     Args:
         provider (ServiceProvider): The provider to generate CNAME for
         
     Returns:
-        str: CNAME target (the Railway app domain)
+        str: CNAME target (the Railway app domain - same for all providers)
     """
     # All providers use the same CNAME target - the Railway app domain
-    # This is because Railway only has one domain for the app
-    # The routing is done by the middleware based on the Host header
-    return getattr(settings, 'RAILWAY_DOMAIN', 'web-production-200fb.up.railway.app')
+    # This is the correct configuration for a multi-tenant SaaS application
+    cname_target = getattr(settings, 'RAILWAY_DOMAIN', 'web-production-200fb.up.railway.app')
+    
+    # Store the CNAME target for reference if not already set
+    if not provider.cname_target:
+        provider.cname_target = cname_target
+        provider.save(update_fields=['cname_target'])
+    
+    return cname_target
 
 
 def generate_unique_txt_record_name(provider):
@@ -158,13 +170,22 @@ def generate_unique_txt_record_name(provider):
     Generate a unique TXT record name for domain verification.
     Each provider gets their own verification TXT record.
     
+    This ensures that:
+    - Every provider has a UNIQUE verification identifier
+    - The TXT record is provider-specific (tied to their unique_booking_url)
+    - DNS verification is unique per provider
+    
+    Example:
+    - Provider with unique_booking_url 'ramesh-salon' gets: _bv-ramesh-salon
+    - Provider with unique_booking_url 'john-fitness' gets: _bv-john-fitness
+    
     Args:
         provider (ServiceProvider): The provider to generate TXT record name for
         
     Returns:
         str: Unique TXT record name (e.g., '_bv-ramesh-salon')
     """
-    # Use provider's unique_booking_url or pk
+    # Use provider's unique_booking_url or pk as identifier
     slug = provider.unique_booking_url or f"provider-{provider.pk}"
     # Prefix with '_bv-' for booking verification
     return f"_bv-{slug}"
