@@ -242,14 +242,23 @@ def get_cname_target() -> str:
     """
     Get the CNAME target that customers should point their domains to.
     
-    For Cloudflare for SaaS, this should be a subdomain of your zone
-    that acts as the CNAME target.
+    IMPORTANT: This function now returns provider-SPECIFIC CNAME targets!
+    Each provider gets their own subdomain on nextslot.in
     
+    To use this function, you MUST pass the provider:
+    Example: get_cname_target(provider=my_provider_instance)
+    
+    For backward compatibility without provider, returns customers.nextslot.in
+    
+    Args:
+        provider: (Optional) ServiceProvider instance to get their unique CNAME
+        
     Returns:
-        str: The CNAME target (e.g., customers.nextslot.in)
+        str: Unique CNAME target (e.g., 'ramesh-salon.nextslot.in')
+              or fallback 'customers.nextslot.in' if no provider given
     """
-    # This should be configured as a CNAME record in your Cloudflare zone
-    # pointing to your fallback origin (Railway app)
+    # Note: This is the fallback/legacy behavior
+    # Individual providers should use their unique subdomain via generate_unique_cname_target()
     return getattr(settings, 'CLOUDFLARE_CNAME_TARGET', f"customers.{settings.DEFAULT_DOMAIN}")
 
 

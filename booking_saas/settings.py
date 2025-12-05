@@ -24,13 +24,30 @@ DEFAULT_DOMAIN = config('DEFAULT_DOMAIN', default='nextslot.in')
 DEFAULT_SCHEME = config('DEFAULT_SCHEME', default='https')
 
 # ============================================================================
-# DIGITALOCEAN APP PLATFORM CONFIGURATION
+# CUSTOM DOMAIN CONFIGURATION FOR SERVICE PROVIDERS
 # ============================================================================
-# DigitalOcean app domain - this is what custom domains should CNAME to
-# Example: nextslot-app.ondigitalocean.app
+# Each service provider gets their own unique subdomain and/or custom domain
+# 
+# Subdomain Examples (on nextslot.in):
+#   - ramesh-salon.nextslot.in
+#   - john-fitness.nextslot.in
+#   - okmentor.nextslot.in
+#
+# Custom Domain Examples (provider's own domain):
+#   - ramesh-salon.com
+#   - john-fitness.com
+#   - okmentor.in
+#
+# For each provider, they CNAME their custom domain to their unique subdomain
+# Example: ramesh-salon.com CNAME -> ramesh-salon.nextslot.in
+
+# Base domain for provider subdomains
+PROVIDER_SUBDOMAIN_BASE = config('PROVIDER_SUBDOMAIN_BASE', default=DEFAULT_DOMAIN)
+
+# DigitalOcean App Platform (fallback/origin server)
 DIGITALOCEAN_APP_DOMAIN = config('DIGITALOCEAN_APP_DOMAIN', default='nextslot-app.ondigitalocean.app')
 
-# For backward compatibility, also set RAILWAY_DOMAIN (not used but kept for compatibility)
+# For backward compatibility, also set RAILWAY_DOMAIN
 RAILWAY_DOMAIN = config('RAILWAY_DOMAIN', default=DIGITALOCEAN_APP_DOMAIN)
 
 # Cloudflare Configuration (for custom domain SSL & DNS)
@@ -38,10 +55,8 @@ CLOUDFLARE_API_TOKEN = config('CLOUDFLARE_API_TOKEN', default='')
 CLOUDFLARE_ZONE_ID = config('CLOUDFLARE_ZONE_ID', default='')
 CLOUDFLARE_ACCOUNT_ID = config('CLOUDFLARE_ACCOUNT_ID', default='')
 
-# Cloudflare for SaaS - CNAME target for custom domains
-# Customers point their domains to this (e.g., customers.nextslot.in)
-# This should be the DigitalOcean app domain
-CLOUDFLARE_CNAME_TARGET = config('CLOUDFLARE_CNAME_TARGET', default=DIGITALOCEAN_APP_DOMAIN)
+# NOTE: Each provider now gets a UNIQUE CNAME target based on their unique_booking_url
+# No longer using a single shared CLOUDFLARE_CNAME_TARGET
 
 # Add the default domain to ALLOWED_HOSTS if not already present
 if DEFAULT_DOMAIN not in ALLOWED_HOSTS:

@@ -137,33 +137,46 @@ def verify_domain_dns(domain, expected_cname=None, expected_txt=None, txt_record
 
 def generate_unique_cname_target(provider):
     """
-    Get the CNAME target for a provider.
-    All providers point to the same DigitalOcean app domain.
-    The unique identification is done via the custom domain itself.
+    Generate a UNIQUE CNAME target for each service provider.
+    Each provider gets their own subdomain on nextslot.in
     
-    IMPORTANT: Every service provider uses the SAME CNAME target
-    because we have one DigitalOcean app domain. The uniqueness comes from:
-    1. Each provider's unique custom domain (e.g., salon1.com, salon2.com)
-    2. Each provider's unique TXT record verification name (_bv-salon-name)
-    3. Middleware routing based on the Host header
+    IMPORTANT: Each service provider gets a DIFFERENT CNAME target:
+    - Provider 1 (Ramesh Salon): CNAME target = ramesh-salon.nextslot.in
+    - Provider 2 (John Fitness): CNAME target = john-fitness.nextslot.in
+    - Provider 3 (OKMentor): CNAME target = okmentor.nextslot.in
+    
+    When a provider adds their custom domain:
+    - Provider custom domain: ramesh-salon.com
+    - They CNAME: ramesh-salon.com → ramesh-salon.nextslot.in
+    
+    DNS Flow:
+    1. User visits: ramesh-salon.com
+    2. DNS resolves: ramesh-salon.com → ramesh-salon.nextslot.in (provider's unique subdomain)
+    3. Cloudflare routes to DigitalOcean app
+    4. Middleware identifies provider by domain and shows their booking page
     
     Args:
-        provider (ServiceProvider): The provider to generate CNAME for
+        provider (ServiceProvider): The provider to generate unique CNAME for
         
     Returns:
-        str: CNAME target (the DigitalOcean app domain - same for all providers)
+        str: Unique CNAME target for this provider (e.g., 'ramesh-salon.nextslot.in')
     """
-    # All providers use the same CNAME target - the DigitalOcean app domain
-    # Example: nextslot-app.ondigitalocean.app
-    # This is the correct configuration for a multi-tenant SaaS application
-    cname_target = getattr(settings, 'DIGITALOCEAN_APP_DOMAIN', 'nextslot-app.ondigitalocean.app')
+    # Get the provider's unique booking URL
+    booking_url = provider.unique_booking_url
     
-    # Store the CNAME target for reference if not already set
-    if not provider.cname_target:
-        provider.cname_target = cname_target
+    # Get the base domain for provider subdomains
+    base_domain = getattr(settings, 'PROVIDER_SUBDOMAIN_BASE', 'nextslot.in')
+    
+    # Generate unique subdomain: {booking_url}.{base_domain}
+    # Example: ramesh-salon.nextslot.in
+    unique_cname_target = f"{booking_url}.{base_domain}"
+    
+    # Store the unique CNAME target for reference
+    if not provider.cname_target or provider.cname_target != unique_cname_target:
+        provider.cname_target = unique_cname_target
         provider.save(update_fields=['cname_target'])
     
-    return cname_target
+    return unique_cname_target
 
 
 def generate_unique_txt_record_name(provider):
