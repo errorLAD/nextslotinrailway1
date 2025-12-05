@@ -100,6 +100,30 @@
             box-shadow: 0 6px 16px rgba(13, 148, 136, 0.4);
         }
         
+        /* DROPDOWN MENU */
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+            border-radius: 12px;
+            padding: 10px 0;
+        }
+        
+        .dropdown-item {
+            padding: 12px 20px;
+            transition: all 0.3s;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+        
+        .dropdown-item:hover {
+            background: rgba(13, 148, 136, 0.1);
+            color: var(--primary);
+        }
+        
+        .dropdown-item i {
+            margin-right: 10px;
+        }
+        
         /* HERO */
         .hero-section {
             padding: 120px 20px 80px;
@@ -209,6 +233,200 @@
             font-size: 5rem;
             color: rgba(13, 148, 136, 0.2);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* AUTH CARDS SECTION */
+        .auth-cards-section {
+            padding: 120px 20px;
+            background: linear-gradient(180deg, #f8fdf9 0%, white 100%);
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+        
+        .auth-header h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+        
+        .auth-header p {
+            font-size: 1.1rem;
+            color: var(--gray-600);
+        }
+        
+        .auth-card {
+            background: white;
+            border-radius: 20px;
+            padding: 50px 35px;
+            transition: all 0.4s ease;
+            border: 2px solid var(--gray-200);
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+        
+        .auth-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 20px 50px rgba(13, 148, 136, 0.15);
+            transform: translateY(-10px);
+        }
+        
+        .auth-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .auth-card-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .provider-icon {
+            background: linear-gradient(135deg, rgba(13, 148, 136, 0.2) 0%, rgba(13, 148, 136, 0.05) 100%);
+            color: var(--primary);
+        }
+        
+        .client-icon {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(99, 102, 241, 0.05) 100%);
+            color: var(--accent);
+        }
+        
+        .auth-card:hover .auth-card-icon {
+            transform: scale(1.1);
+        }
+        
+        .auth-card-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+        
+        .auth-card-desc {
+            color: var(--gray-600);
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+        
+        .auth-card-features {
+            list-style: none;
+            margin-bottom: 30px;
+            flex-grow: 1;
+        }
+        
+        .auth-card-features li {
+            padding: 12px 0;
+            color: var(--gray-700);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+        }
+        
+        .auth-card-features i {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .provider-card .auth-card-features i {
+            background: rgba(13, 148, 136, 0.2);
+            color: var(--primary);
+        }
+        
+        .client-card .auth-card-features i {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--accent);
+        }
+        
+        .auth-card-btn {
+            padding: 14px 30px;
+            font-weight: 600;
+            border-radius: 12px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+        
+        .provider-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            box-shadow: 0 6px 20px rgba(13, 148, 136, 0.3);
+        }
+        
+        .provider-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 28px rgba(13, 148, 136, 0.4);
+            color: white;
+        }
+        
+        .client-btn {
+            background: linear-gradient(135deg, var(--accent) 0%, #818cf8 100%);
+            color: white;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+        }
+        
+        .client-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 28px rgba(99, 102, 241, 0.4);
+            color: white;
+        }
+        
+        .auth-card-footer {
+            text-align: center;
+            color: var(--gray-500);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        
+        .login-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .login-link:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
         }
         
         /* FEATURES */
@@ -460,21 +678,27 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center gap-3">
+                <ul class="navbar-nav ms-auto align-items-center gap-2">
                     <li class="nav-item">
                         <a class="nav-link nav-link-custom" href="#features">Features</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link nav-link-custom" href="{% url 'subscriptions:pricing' %}">Pricing</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-custom" href="#">About</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link nav-link-custom dropdown-toggle" href="#" id="signupDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-plus"></i> Sign Up
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="signupDropdown">
+                            <li><a class="dropdown-item" href="{% url 'accounts:register_provider' %}"><i class="bi bi-shop"></i> Service Provider</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:register_client' %}"><i class="bi bi-person"></i> Client</a></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
-                        <a class="btn btn-nav-login" href="{% url 'accounts:login' %}">Login</a>
+                        <a class="btn btn-nav-login" href="{% url 'accounts:login' %}"><i class="bi bi-box-arrow-in-right"></i> Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="btn btn-nav-signup" href="{% url 'accounts:register_provider' %}">Get Started</a>
+                        <a class="btn btn-nav-signup" href="{% url 'accounts:register_provider' %}"><i class="bi bi-star-fill"></i> Get Started</a>
                     </li>
                 </ul>
             </div>
@@ -506,6 +730,60 @@
                         <div class="hero-visual">
                             <i class="bi bi-calendar2-event"></i>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AUTH CARDS SECTION -->
+    <section class="auth-cards-section">
+        <div class="container">
+            <div class="auth-header">
+                <h2>Start Your Journey Now</h2>
+                <p>Choose your role and get started with NextSlot</p>
+            </div>
+
+            <div class="row g-4 justify-content-center">
+                <!-- Service Provider Card -->
+                <div class="col-md-5 col-lg-4">
+                    <div class="auth-card provider-card">
+                        <div class="auth-card-icon provider-icon">
+                            <i class="bi bi-shop"></i>
+                        </div>
+                        <h3 class="auth-card-title">For Service Providers</h3>
+                        <p class="auth-card-desc">Manage appointments effortlessly, grow your business, and delight customers.</p>
+                        <ul class="auth-card-features">
+                            <li><i class="bi bi-check-lg"></i> 24/7 Online Booking</li>
+                            <li><i class="bi bi-check-lg"></i> Smart Reminders</li>
+                            <li><i class="bi bi-check-lg"></i> Team Management</li>
+                            <li><i class="bi bi-check-lg"></i> Analytics Dashboard</li>
+                        </ul>
+                        <a href="{% url 'accounts:register_provider' %}" class="auth-card-btn provider-btn">
+                            Sign Up as Provider <i class="bi bi-arrow-right"></i>
+                        </a>
+                        <p class="auth-card-footer">Already have an account? <a href="{% url 'accounts:login' %}" class="login-link">Login</a></p>
+                    </div>
+                </div>
+
+                <!-- Client Card -->
+                <div class="col-md-5 col-lg-4">
+                    <div class="auth-card client-card">
+                        <div class="auth-card-icon client-icon">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+                        <h3 class="auth-card-title">For Clients</h3>
+                        <p class="auth-card-desc">Book appointments from your favorite service providers with ease.</p>
+                        <ul class="auth-card-features">
+                            <li><i class="bi bi-check-lg"></i> Browse Services</li>
+                            <li><i class="bi bi-check-lg"></i> Easy Booking</li>
+                            <li><i class="bi bi-check-lg"></i> Payment Options</li>
+                            <li><i class="bi bi-check-lg"></i> Appointment Reminders</li>
+                        </ul>
+                        <a href="{% url 'accounts:register_client' %}" class="auth-card-btn client-btn">
+                            Sign Up as Client <i class="bi bi-arrow-right"></i>
+                        </a>
+                        <p class="auth-card-footer">Already have an account? <a href="{% url 'accounts:login' %}" class="login-link">Login</a></p>
                     </div>
                 </div>
             </div>
