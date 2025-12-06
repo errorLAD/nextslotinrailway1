@@ -109,17 +109,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+    'django.contrib.humanize',
+    'crispy_forms',
+    'crispy_bootstrap5',
     # Third-party apps
     'django_celery_beat',
     'mathfilters',
-    'storages',
-    
     # Local apps
     'accounts.apps.AccountsConfig',
     'providers.apps.ProvidersConfig',
     'appointments.apps.AppointmentsConfig',
     'subscriptions.apps.SubscriptionsConfig',
+    'utils.apps.UtilsConfig',
 ]
 
 MIDDLEWARE = [
@@ -232,23 +233,15 @@ STATICFILES_DIRS = [
     BASE_DIR / 'subscriptions/static',
 ]
 
-# Media files (User uploads) - DigitalOcean Spaces
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+# Media files (User uploads) - Stored in PostgreSQL
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "nextslootindia")
-AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "sfo3")
-AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", "https://sfo3.digitaloceanspaces.com")
-AWS_S3_CUSTOM_DOMAIN = os.environ.get(
-    "AWS_S3_CUSTOM_DOMAIN",
-    f"{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_REGION_NAME}.digitaloceanspaces.com",
-)
+# Use local filesystem storage for uploaded files
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
-AWS_DEFAULT_ACL = "public-read"
-AWS_QUERYSTRING_AUTH = False
-
-MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+# Ensure the media directory exists
+os.makedirs(MEDIA_ROOT, exist_ok=True)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

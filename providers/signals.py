@@ -11,14 +11,28 @@ import os
 
 
 def delete_file_if_exists(file_field):
-    """Helper function to delete a file from storage if it exists."""
-    if file_field and hasattr(file_field, 'path'):
-        try:
-            if os.path.isfile(file_field.path):
-                os.remove(file_field.path)
-                return True
-        except Exception as e:
-            print(f"Error deleting file {file_field.path}: {e}")
+    """Helper function to delete a file from storage if it exists.
+
+    Uses the storage backend API so it works with both filesystem and
+    non-filesystem backends (e.g. DatabaseStorage).
+    """
+    if not file_field:
+        return False
+
+    try:
+        storage = file_field.storage
+        name = file_field.name
+
+        if not name:
+            return False
+
+        if storage.exists(name):
+            storage.delete(name)
+            return True
+    except Exception as e:
+        # Keep this non-fatal so profile saves don't crash on cleanup
+        print(f"Error deleting file via storage backend: {e}")
+
     return False
 
 

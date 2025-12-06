@@ -19,6 +19,8 @@ urlpatterns = [
     path('provider/', include('providers.urls')),
     path('appointments/', include('appointments.urls')),
     path('pricing/', include('subscriptions.urls')),
+    # Utils (DB media serving, etc.)
+    path('', include('utils.urls')),
 ]
 
 # Add webhook URLs (outside app namespace)
