@@ -27,6 +27,7 @@ def verify_domain_dns(domain, expected_cname=None, expected_txt=None, txt_record
     Args:
         domain (str): The domain to verify
         expected_cname (str, optional): Expected CNAME value
+        results['https_ready'] = False
         expected_txt (str, optional): Expected TXT record value for verification
         txt_record_name (str, optional): Custom TXT record name (e.g., '_bv-provider-slug')
         

@@ -76,7 +76,15 @@ class ServiceProvider(models.Model):
     """
     Service Provider profile with subscription plan management.
     One-to-One relationship with CustomUser.
+    Supports unique custom domains per provider, DNS verification, and SSL status.
     """
+    custom_domain = models.CharField(max_length=255, blank=True, null=True, help_text="Provider's custom domain (e.g., okmentor.in)")
+    custom_domain_type = models.CharField(max_length=20, default='none', choices=[('none', 'None'), ('subdomain', 'Subdomain'), ('domain', 'Custom Domain')], help_text="Type of domain: subdomain or custom domain")
+    cname_target = models.CharField(max_length=255, blank=True, null=True, help_text="CNAME target for DNS setup")
+    txt_record_name = models.CharField(max_length=255, blank=True, null=True, help_text="TXT record name for DNS verification")
+    domain_verification_code = models.CharField(max_length=64, blank=True, null=True, help_text="Unique code for TXT DNS verification")
+    domain_verified = models.BooleanField(default=False, help_text="Is the custom domain verified?")
+    ssl_enabled = models.BooleanField(default=False, help_text="Is SSL enabled for this domain?")
     
     BUSINESS_TYPE_CHOICES = [
         ('salon', 'Salon & Spa'),

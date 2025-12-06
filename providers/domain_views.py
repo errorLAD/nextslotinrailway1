@@ -277,12 +277,16 @@ def verify_domain(request):
         return redirect('providers:dashboard')
     
     success, message = verify_domain_ownership(provider)
-    
     if success:
+        provider.domain_verified = True
+        provider.ssl_enabled = True
+        provider.save(update_fields=['domain_verified', 'ssl_enabled'])
         messages.success(request, 'Domain verified successfully! Your custom domain is now active with SSL.')
     else:
+        provider.domain_verified = False
+        provider.ssl_enabled = False
+        provider.save(update_fields=['domain_verified', 'ssl_enabled'])
         messages.warning(request, message + ' Make sure DNS records are configured at your domain registrar and propagated (may take up to 48 hours).')
-    
     return redirect('providers:custom_domain')
 
 @login_required
