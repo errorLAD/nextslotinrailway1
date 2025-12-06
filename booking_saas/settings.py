@@ -1,11 +1,12 @@
 """
 Django settings for booking_saas project.
 Multi-tenant appointment booking SaaS with freemium pricing.
-testing
+testing image upaloda 
 """
 
 from pathlib import Path
 from decouple import config
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -112,6 +113,7 @@ INSTALLED_APPS = [
     # Third-party apps
     'django_celery_beat',
     'mathfilters',
+    'storages',
     
     # Local apps
     'accounts.apps.AccountsConfig',
@@ -230,9 +232,23 @@ STATICFILES_DIRS = [
     BASE_DIR / 'subscriptions/static',
 ]
 
-# Media files (User uploads)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Media files (User uploads) - DigitalOcean Spaces
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "nextslootindia")
+AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "sfo3")
+AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", "https://sfo3.digitaloceanspaces.com")
+AWS_S3_CUSTOM_DOMAIN = os.environ.get(
+    "AWS_S3_CUSTOM_DOMAIN",
+    f"{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_REGION_NAME}.digitaloceanspaces.com",
+)
+
+AWS_DEFAULT_ACL = "public-read"
+AWS_QUERYSTRING_AUTH = False
+
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -380,7 +396,6 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # Allow all hosts in Railway (Railway handles this via proxy)
-import os
 if os.environ.get('RAILWAY_ENVIRONMENT'):
     ALLOWED_HOSTS = ['*']
     DEBUG = False
