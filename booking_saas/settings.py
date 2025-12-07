@@ -118,6 +118,7 @@ INSTALLED_APPS = [
     # Third-party apps
     'django_celery_beat',
     'mathfilters',
+    'db_file_storage',  # For database file storage
     # Local apps
     'accounts.apps.AccountsConfig',
     'providers.apps.ProvidersConfig',
@@ -236,14 +237,35 @@ STATICFILES_DIRS = [
     BASE_DIR / 'subscriptions/static',
 ]
 
-# Media files (User uploads) - Stored in PostgreSQL
+# Media files (User uploads) - Stored in AWS S3
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Use local filesystem storage for uploaded files
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+# AWS S3 Configuration
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default='')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default='')
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default='')
+AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='ap-south-1')  # Change to your preferred region
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+AWS_DEFAULT_ACL = 'public-read'
+AWS_QUERYSTRING_AUTH = False
 
-# Ensure the media directory exists
+# S3 Static files configuration
+STATICFILES_LOCATION = 'static'
+STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/'
+STATICFILES_STORAGE = 'booking_saas.aws_s3_storages.StaticRootS3Boto3Storage'
+
+# Media files configuration
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Use database storage for files
+DEFAULT_FILE_STORAGE = 'db_file_storage.storage.DatabaseFileStorage'
+
+# Ensure the media directory exists locally for development
 os.makedirs(MEDIA_ROOT, exist_ok=True)
 
 # Default primary key field type

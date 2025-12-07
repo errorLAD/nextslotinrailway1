@@ -249,7 +249,7 @@ class ServiceProvider(models.Model):
     
     # Media
     profile_image = models.ImageField(
-        upload_to=upload_profile_image,
+        upload_to='db_file_storage.urls.get_url',
         blank=True,
         null=True,
         help_text='Business logo or profile picture'
@@ -257,7 +257,7 @@ class ServiceProvider(models.Model):
     
     # Branding & About
     logo = models.ImageField(
-        upload_to=upload_logo,
+        upload_to='db_file_storage.urls.get_url',
         blank=True,
         null=True,
         help_text='Upload your business logo (recommended: 500x500px square)'
@@ -661,7 +661,7 @@ class Testimonial(models.Model):
     )
     client_name = models.CharField(max_length=200)
     client_photo = models.ImageField(
-        upload_to=upload_testimonial_photo,
+        upload_to='db_file_storage.urls.get_url',
         blank=True,
         null=True
     )
@@ -688,7 +688,7 @@ class HeroImage(models.Model):
         on_delete=models.CASCADE,
         related_name='hero_images'
     )
-    image = models.ImageField(upload_to=upload_hero_image)
+    image = models.ImageField(upload_to='db_file_storage.urls.get_url')
     caption = models.CharField(max_length=200, blank=True, null=True)
     display_order = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
@@ -713,7 +713,7 @@ class TeamMember(models.Model):
     )
     name = models.CharField(max_length=200)
     photo = models.ImageField(
-        upload_to=upload_team_photo,
+        upload_to='db_file_storage.urls.get_url',
         blank=True,
         null=True
     )

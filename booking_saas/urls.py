@@ -11,6 +11,9 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path('admin/', admin.site.urls),
     
+    # Database file storage URLs
+    path('media/', include('db_file_storage.urls')),
+    
     # Landing page
     path('', TemplateView.as_view(template_name='landing.html'), name='home'),
     
