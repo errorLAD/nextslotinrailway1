@@ -49,6 +49,7 @@ django-ratelimit>=4.1.0
 
 # Forms
 django-crispy-forms>=2.1
+crispy-bootstrap5>=2023.1
 
 # Database Backup (Optional)
 django-dbbackup>=4.0.2
