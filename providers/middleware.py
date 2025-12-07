@@ -45,126 +45,112 @@ class SubscriptionCheckMiddleware:
 
 class CustomDomainMiddleware:
     """
-    Middleware to handle custom domain routing for service providers.
-    
-    Supports multiple providers with independent custom domains on DigitalOcean.
+    Enhanced middleware for custom domain handling with DigitalOcean App Platform.
+    Supports both direct custom domains and subdomains of the main domain.
     
     How it works:
-    1. Provider adds CNAME record: custom-domain.com CNAME -> provider-slug.nextslot.in
-    2. provider-slug.nextslot.in CNAME -> app.ondigitalocean.app (handled in DNS registrar)
-    3. When request comes to custom-domain.com, middleware routes to provider's booking page
-    4. Let's Encrypt automatically generates SSL certificates for all domains
-    
-    Example for okmentor.in:
-    - User visits okmentor.in
-    - Middleware finds provider with custom_domain='okmentor.in'
-    - Redirects to /book/okmentor/ (provider's public booking page)
-    - All served under okmentor.in with Let's Encrypt SSL
+    1. For custom domains (e.g., example.com):
+       - Provider adds CNAME: example.com -> your-app.ondigitalocean.app
+       - We look up the provider by custom_domain field
+       
+    2. For subdomains (e.g., provider.nextslot.in):
+       - We extract the subdomain and look up by unique_booking_url
+       
+    SSL is automatically handled by DigitalOcean's Let's Encrypt integration.
     """
     
     def __init__(self, get_response):
         self.get_response = get_response
+        self.default_domain = getattr(settings, 'DEFAULT_DOMAIN', 'nextslot.in')
+        self.do_domain = getattr(settings, 'DIGITALOCEAN_APP_DOMAIN', 'app.ondigitalocean.app')
+        
+        # Domains that should skip custom domain processing
+        self.skip_domains = {
+            'localhost',
+            '127.0.0.1',
+            '0.0.0.0',
+            self.default_domain,
+            f'www.{self.default_domain}',
+            self.do_domain,
+            f'www.{self.do_domain}',
+            'customers.' + self.default_domain
+        }
     
     def __call__(self, request):
-        # Skip for static/media files and admin
-        if request.path.startswith(('/static/', '/media/', '/admin/', '/.well-known/')):
+        # Skip for static/media files, admin, and health checks
+        if any(request.path.startswith(p) for p in ('/static/', '/media/', '/admin/', '/.well-known/', '/health/')):
             return self.get_response(request)
-        
-        # Initialize default values
+            
+        # Initialize request attributes
         request.custom_domain_provider = None
         request.is_custom_domain = False
+        
+        # Get the hostname and clean it
+        host = self.get_clean_host(request)
+        if not host:
+            return self.get_response(request)
             
-        host = request.get_host().split(':')[0].lower().strip()
-        
-        # Remove www prefix for checking
-        check_host = host[4:] if host.startswith('www.') else host
-        
-        # Skip if it's the default domain, DigitalOcean domain, or localhost
-        default_domain = getattr(settings, 'DEFAULT_DOMAIN', 'nextslot.in')
-        do_domain = getattr(settings, 'DIGITALOCEAN_APP_DOMAIN', 'app.ondigitalocean.app')
-        
-        skip_hosts = [
-            default_domain, 
-            f'www.{default_domain}', 
-            'localhost', 
-            '127.0.0.1', 
-            'customers.' + default_domain,
-            do_domain,
-            f'www.{do_domain}'
-        ]
-        
-        # Skip DigitalOcean App Platform domains
-        if check_host in skip_hosts or host.endswith('.ondigitalocean.app') or host.endswith('.up.railway.app'):
+        # Skip processing for default domains
+        if host in self.skip_domains or host.endswith(('.ondigitalocean.app', '.up.railway.app')):
             return self.get_response(request)
         
-        # Check if this is a subdomain of the default domain (e.g., okmentor.nextslot.in)
-        if check_host.endswith(f'.{default_domain}'):
-            subdomain = check_host.replace(f'.{default_domain}', '')
-            if subdomain and subdomain != 'www' and subdomain != 'customers':
-                try:
-                    # For subdomains, check by subdomain match
-                    provider = ServiceProvider.objects.get(
-                        custom_domain=check_host,
-                        is_active=True
-                    )
-                    request.custom_domain_provider = provider
-                    request.is_custom_domain = True
-                    
-                    # Redirect to provider's booking page if at root
-                    if request.path == '/' or request.path == '':
-                        return redirect('appointments:public_booking', slug=provider.unique_booking_url)
-                        
-                except ServiceProvider.DoesNotExist:
-                    # Try to find by unique_booking_url matching subdomain
-                    try:
-                        provider = ServiceProvider.objects.get(
-                            unique_booking_url=subdomain,
-                            is_active=True
-                        )
-                        request.custom_domain_provider = provider
-                        request.is_custom_domain = True
-                        
-                        if request.path == '/' or request.path == '':
-                            return redirect('appointments:public_booking', slug=provider.unique_booking_url)
-                    except ServiceProvider.DoesNotExist:
-                        pass
-        else:
-            # This is an external custom domain (e.g., okmentor.in)
-            # Each provider can have their own independent custom domain
-            # Try to find provider by custom domain (check both with and without www)
-            provider = None
+        # Find provider by custom domain or subdomain
+        provider = self.find_provider_by_domain(host)
+        if provider:
+            request.custom_domain_provider = provider
+            request.is_custom_domain = True
             
-            # Try exact match first (case-insensitive)
-            try:
-                provider = ServiceProvider.objects.get(
-                    custom_domain__iexact=check_host,
-                    is_active=True
-                )
-            except ServiceProvider.DoesNotExist:
-                # Try with www prefix
-                try:
-                    provider = ServiceProvider.objects.get(
-                        custom_domain__iexact=f'www.{check_host}',
-                        is_active=True
-                    )
-                except ServiceProvider.DoesNotExist:
-                    # Try without www if original had www
-                    if host.startswith('www.'):
-                        try:
-                            provider = ServiceProvider.objects.get(
-                                custom_domain__iexact=host,
-                                is_active=True
-                            )
-                        except ServiceProvider.DoesNotExist:
-                            pass
+            # Redirect to HTTPS if not already secure
+            if not request.is_secure() and not settings.DEBUG:
+                return self.redirect_to_https(request)
             
-            if provider:
-                request.custom_domain_provider = provider
-                request.is_custom_domain = True
-                
-                # Redirect to provider's booking page if at root
-                if request.path == '/' or request.path == '':
-                    return redirect('appointments:public_booking', slug=provider.unique_booking_url)
+            # Redirect root path to provider's booking page
+            if request.path in ('/', ''):
+                return redirect('appointments:public_booking', slug=provider.unique_booking_url)
         
-        response = self.get_response(request)
-        return response
+        return self.get_response(request)
+    
+    def get_clean_host(self, request):
+        """Extract and clean the hostname from the request."""
+        host = request.get_host().split(':')[0].lower().strip()
+        
+        # Remove port if present
+        if ':' in host:
+            host = host.split(':', 1)[0]
+            
+        # Remove www. prefix for consistent matching
+        if host.startswith('www.'):
+            host = host[4:]
+            
+        return host
+    
+    def find_provider_by_domain(self, host):
+        """Find a provider by custom domain or subdomain."""
+        # First try exact match on custom_domain
+        try:
+            return ServiceProvider.objects.filter(
+                custom_domain__iexact=host,
+                is_active=True,
+                domain_verified=True
+            ).first()
+        except ServiceProvider.DoesNotExist:
+            pass
+            
+        # Then try subdomain match (e.g., provider.nextslot.in)
+        if host.endswith(f'.{self.default_domain}'):
+            subdomain = host.replace(f'.{self.default_domain}', '')
+            if subdomain and subdomain != 'www':
+                try:
+                    return ServiceProvider.objects.get(
+                        unique_booking_url__iexact=subdomain,
+                        is_active=True
+                    )
+                except ServiceProvider.DoesNotExist:
+                    pass
+        return None
+    
+    def redirect_to_https(self, request):
+        """Redirect to HTTPS version of the same URL."""
+        url = request.build_absolute_uri(request.get_full_path())
+        secure_url = url.replace('http://', 'https://', 1)
+        return redirect(secure_url, permanent=True)

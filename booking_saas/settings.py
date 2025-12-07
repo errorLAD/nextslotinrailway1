@@ -22,7 +22,10 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,*.ondigital
 
 # Domain configuration
 DEFAULT_DOMAIN = config('DEFAULT_DOMAIN', default='nextslot.in')
-DEFAULT_SCHEME = config('DEFAULT_SCHEME', default='https')
+DEFAULT_SCHEME = 'https'  # Always use HTTPS in production
+
+# DigitalOcean App Platform Configuration
+DIGITALOCEAN_APP_DOMAIN = config('DIGITALOCEAN_APP_DOMAIN', required=True)  # e.g., 'your-app.ondigitalocean.app'
 
 # ============================================================================
 # HOSTING CONFIGURATION - DigitalOcean App Platform
@@ -273,9 +276,22 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
-# SSL Configuration for custom domains
+# Security settings
+SECURE_SSL_REDIRECT = not DEBUG
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = not DEBUG  # Redirect all non-HTTPS requests to HTTPS in production
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+# Allow all hosts - we validate in middleware
+ALLOWED_HOSTS = ['*']
+
+# Add the DigitalOcean domain to ALLOWED_HOSTS
+if 'DIGITALOCEAN_APP_DOMAIN' in locals() and DIGITALOCEAN_APP_DOMAIN not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(DIGITALOCEAN_APP_DOMAIN)
+    ALLOWED_HOSTS.append(f'www.{DIGITALOCEAN_APP_DOMAIN}')
 
 # ============================================================================
 # Let's Encrypt SSL Configuration
