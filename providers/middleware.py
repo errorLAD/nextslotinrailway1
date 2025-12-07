@@ -62,7 +62,8 @@ class CustomDomainMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
         self.default_domain = getattr(settings, 'DEFAULT_DOMAIN', 'nextslot.in')
-        self.do_domain = getattr(settings, 'DIGITALOCEAN_APP_DOMAIN', 'app.ondigitalocean.app')
+        # Fallback to default DigitalOcean domain if not set
+        self.do_domain = getattr(settings, 'DIGITALOCEAN_APP_DOMAIN', f'app.{self.default_domain}')
         
         # Domains that should skip custom domain processing
         self.skip_domains = {

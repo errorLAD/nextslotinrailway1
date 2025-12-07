@@ -25,7 +25,7 @@ DEFAULT_DOMAIN = config('DEFAULT_DOMAIN', default='nextslot.in')
 DEFAULT_SCHEME = 'https'  # Always use HTTPS in production
 
 # DigitalOcean App Platform Configuration
-DIGITALOCEAN_APP_DOMAIN = config('DIGITALOCEAN_APP_DOMAIN', required=True)  # e.g., 'your-app.ondigitalocean.app'
+DIGITALOCEAN_APP_DOMAIN = config('DIGITALOCEAN_APP_DOMAIN', default='app.ondigitalocean.app')  # Default DigitalOcean App Platform domain
 
 # ============================================================================
 # HOSTING CONFIGURATION - DigitalOcean App Platform
