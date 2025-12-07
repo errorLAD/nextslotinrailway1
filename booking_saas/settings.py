@@ -1,7 +1,7 @@
 """
 Django settings for booking_saas project.
 Multi-tenant appointment booking SaaS with freemium pricing.
-testing image upaloda 
+ret new 
 """
 
 from pathlib import Path
